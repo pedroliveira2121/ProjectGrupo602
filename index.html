@@ -587,4 +587,183 @@ function renderResumo(){
   });
   el("groupSummary").innerHTML = Object.entries(porGrupo).map(([g,d]) => `
     <div class="box">
-      <div class="num">${d.horas.toFixed
+      <div class="num">${d.horas.toFixed(1)}h</div>
+      <div class="lbl">G${g} • ${d.lanc} lanç.</div>
+    </div>
+  `).join("");
+
+  el("checklistSummary").innerHTML = Object.keys(GRUPOS).map(g => {
+    const c = contarStatusGrupo(g);
+    const pp=(c.pend/c.total)*100, pa=(c.and/c.total)*100, pc=(c.conc/c.total)*100;
+    const pctConc = c.total ? Math.round((c.conc/c.total)*100) : 0;
+    return `
+      <div class="cl-row">
+        <div class="top">
+          <strong>G${g} – ${GRUPOS[g].area}</strong>
+          <span>${c.conc}/${c.total} • ${pctConc}%</span>
+        </div>
+        <div class="bar">
+          <div class="seg pend" style="width:${pp}%"></div>
+          <div class="seg and"  style="width:${pa}%"></div>
+          <div class="seg conc" style="width:${pc}%"></div>
+        </div>
+      </div>
+    `;
+  }).join("");
+}
+
+/* ====== AÇÕES DA TABELA ====== */
+tabela.addEventListener("click", e => {
+  const btn = e.target.closest("button[data-acao]");
+  if(!btn) return;
+  const id = btn.dataset.id;
+  const acao = btn.dataset.acao;
+  const item = lancamentos.find(l => l.id === id);
+  if(!item) return;
+
+  if(acao === "excluir"){
+    if(confirm(`Excluir o lançamento de ${item.nome}?`)){
+      lancamentos = lancamentos.filter(l => l.id !== id);
+      salvarStorage();
+      render();
+      mostrarMsg("Lançamento excluído.","info");
+    }
+  } else if(acao === "editar"){
+    el("nome").value = item.nome;
+    el("data").value = item.data;
+    el("horas").value = item.horas;
+    el("grupo").value = item.grupo;
+    el("atividade").value = item.atividade || "";
+    garantirStatusGrupo(item.grupo);
+    renderGroupInfo(item.grupo);
+    editandoId = id;
+    el("btnSalvar").textContent = "💾 Atualizar lançamento";
+    window.scrollTo({ top:0, behavior:"smooth" });
+  }
+});
+
+/* ====== FILTROS ====== */
+el("filtroNome").addEventListener("input", render);
+el("filtroGrupo").addEventListener("change", render);
+el("filtroData").addEventListener("change", render);
+
+/* ====== PAINEL ADMIN ====== */
+function renderAdminChecklistEditor(){
+  const cont = el("adminChecklistEditor");
+  if(!isAdmin){ cont.innerHTML = ""; return; }
+  cont.innerHTML = Object.keys(GRUPOS).map(g => {
+    const info = GRUPOS[g];
+    const st = garantirStatusGrupo(g);
+    return `
+      <div class="cl-row" style="margin-bottom:10px;">
+        <div class="top"><strong>G${g} – ${info.area}</strong></div>
+        <div class="checklist">
+          ${info.entregaveis.map((item, i) => `
+            <div class="check-item">
+              <div class="txt">${i+1}. ${item}</div>
+              <div class="status-row">
+                ${Object.entries(STATUS).map(([key, val]) => `
+                  <span class="status-pill ${val.cls} ${(st[i]||"pendente")===key ? "active":""}"
+                        data-admin-grupo="${g}" data-admin-item="${i}" data-admin-status="${key}">
+                    ${val.label}
+                  </span>
+                `).join("")}
+              </div>
+            </div>
+          `).join("")}
+        </div>
+      </div>
+    `;
+  }).join("");
+
+  cont.querySelectorAll("[data-admin-grupo]").forEach(pill => {
+    pill.addEventListener("click", () => {
+      statusChecklist[pill.dataset.adminGrupo][pill.dataset.adminItem] = pill.dataset.adminStatus;
+      salvarStorage();
+      renderAdminChecklistEditor();
+      renderResumo();
+      render();
+    });
+  });
+}
+
+el("btnResetChecklists").addEventListener("click", () => {
+  if(!isAdmin) return;
+  if(!confirm("Resetar TODOS os checklists para 'Pendente'?")) return;
+  Object.keys(GRUPOS).forEach(g => {
+    statusChecklist[g] = {};
+    GRUPOS[g].entregaveis.forEach((_,i) => statusChecklist[g][i] = "pendente");
+  });
+  salvarStorage();
+  renderAdminChecklistEditor();
+  renderResumo();
+  render();
+  mostrarMsg("Checklists resetados.","info");
+});
+
+el("btnMarcarTudoConcluido").addEventListener("click", () => {
+  if(!isAdmin) return;
+  if(!confirm("Marcar TODOS os itens de TODOS os grupos como 'Concluída'?")) return;
+  Object.keys(GRUPOS).forEach(g => {
+    statusChecklist[g] = {};
+    GRUPOS[g].entregaveis.forEach((_,i) => statusChecklist[g][i] = "concluida");
+  });
+  salvarStorage();
+  renderAdminChecklistEditor();
+  renderResumo();
+  render();
+  mostrarMsg("Todos os checklists marcados como concluídos.","ok");
+});
+
+el("btnApagarTudo").addEventListener("click", () => {
+  if(!isAdmin) return;
+  if(!confirm("Apagar TODOS os lançamentos? Essa ação não pode ser desfeita.")) return;
+  lancamentos = [];
+  salvarStorage();
+  render();
+  renderResumo();
+  mostrarMsg("Todos os lançamentos foram apagados.","info");
+});
+
+/* ====== EXPORTAR CSV ====== */
+el("btnExportar").addEventListener("click", () => {
+  if(lancamentos.length === 0) return mostrarMsg("Nada para exportar.","err");
+  const cab = ["Nome","Data","Grupo","Area","Horas","Atividade","Pendentes","Em andamento","Concluidas"];
+  const linhas = lancamentos.map(l => {
+    const cl = l.checklist || {};
+    let p=0,a=0,c=0;
+    Object.values(cl).forEach(s => {
+      if(s==="concluida") c++;
+      else if(s==="andamento") a++;
+      else p++;
+    });
+    return [
+      l.nome, formatarData(l.data), "G"+l.grupo, GRUPOS[l.grupo]?.area || "",
+      l.horas.toFixed(1).replace(".", ","),
+      (l.atividade || "").replace(/;/g, ","), p, a, c
+    ];
+  });
+  const csv = [cab, ...linhas].map(linha => linha.map(c => `"${c}"`).join(";")).join("\n");
+  const blob = new Blob(["\uFEFF" + csv], { type:"text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `lancamentos_horas_${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+  mostrarMsg("CSV exportado.","ok");
+});
+
+el("btnImprimir").addEventListener("click", () => window.print());
+
+/* ====== INIT ====== */
+(function init(){
+  el("data").value = new Date().toISOString().slice(0,10);
+  Object.keys(GRUPOS).forEach(g => garantirStatusGrupo(g));
+  atualizarUIAdmin();
+  render();
+  renderResumo();
+})();
+</script>
+</body>
+</html>

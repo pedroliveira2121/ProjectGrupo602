@@ -1,0 +1,750 @@
+# <!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lançamento de Horas – Turma Mecatrônica</title>
+<style>
+  :root{
+    --bg:#0f172a;
+    --card:#1e293b;
+    --card2:#334155;
+    --text:#e2e8f0;
+    --muted:#94a3b8;
+    --accent:#38bdf8;
+    --accent2:#22c55e;
+    --warn:#f59e0b;
+    --danger:#ef4444;
+    --admin:#a855f7;
+    --border:#475569;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+    background:linear-gradient(180deg,#0f172a,#1e293b);
+    color:var(--text);
+    min-height:100vh;
+    padding:24px;
+  }
+  h1,h2,h3{margin:0 0 12px;}
+  h1{font-size:1.6rem;}
+  h2{font-size:1.2rem;color:var(--accent);}
+  .container{max-width:1200px;margin:0 auto;}
+
+  /* Topbar admin */
+  .topbar{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:12px;
+    flex-wrap:wrap;
+    margin-bottom:8px;
+  }
+  .admin-badge{
+    background:rgba(168,85,247,.15);
+    border:1px solid var(--admin);
+    color:#e9d5ff;
+    padding:6px 12px;
+    border-radius:999px;
+    font-size:.8rem;
+    font-weight:700;
+    display:none;
+    align-items:center;
+    gap:8px;
+  }
+  .admin-badge.on{display:inline-flex;}
+  .admin-badge button{
+    width:auto;
+    padding:2px 8px;
+    font-size:.75rem;
+    background:transparent;
+    color:#e9d5ff;
+    border:1px solid var(--admin);
+    border-radius:6px;
+  }
+
+  .grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:20px;
+  }
+  @media(max-width:900px){.grid{grid-template-columns:1fr;}}
+  .card{
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:14px;
+    padding:20px;
+    box-shadow:0 8px 24px rgba(0,0,0,.25);
+  }
+  .card.admin-card{border-color:var(--admin);}
+  label{display:block;font-size:.85rem;color:var(--muted);margin-bottom:4px;}
+  input,select,textarea,button{
+    width:100%;
+    padding:10px 12px;
+    border-radius:8px;
+    border:1px solid var(--border);
+    background:var(--card2);
+    color:var(--text);
+    font-size:.95rem;
+    outline:none;
+  }
+  input:focus,select:focus,textarea:focus{border-color:var(--accent);}
+  textarea{resize:vertical;min-height:70px;}
+  .row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  .row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;}
+  @media(max-width:600px){.row,.row3{grid-template-columns:1fr;}}
+  .field{margin-bottom:12px;}
+  button{
+    cursor:pointer;
+    background:var(--accent);
+    color:#0f172a;
+    font-weight:700;
+    border:none;
+    transition:.2s;
+  }
+  button:hover{filter:brightness(1.1);}
+  button.secondary{background:var(--card2);color:var(--text);border:1px solid var(--border);}
+  button.danger{background:var(--danger);color:#fff;}
+  button.warn{background:var(--warn);color:#0f172a;}
+  button.ok{background:var(--accent2);color:#0f172a;}
+  button.admin{background:var(--admin);color:#fff;}
+
+  /* Checklist */
+  .group-info{
+    background:#0b1220;
+    border-left:4px solid var(--accent);
+    padding:12px 14px;
+    border-radius:8px;
+    font-size:.9rem;
+    margin-bottom:12px;
+  }
+  .group-info strong{color:var(--accent);}
+  .group-info .hint{color:var(--muted);font-size:.8rem;margin-top:6px;}
+  .checklist{margin-top:10px;display:flex;flex-direction:column;gap:8px;}
+  .check-item{
+    background:#0f172a;
+    border:1px solid var(--border);
+    border-radius:8px;
+    padding:10px 12px;
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+  }
+  .check-item .txt{font-size:.88rem;line-height:1.35;}
+  .check-item .status-row{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    flex-wrap:wrap;
+  }
+  .status-pill{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    padding:4px 10px;
+    border-radius:999px;
+    font-size:.75rem;
+    font-weight:700;
+    cursor:pointer;
+    border:1px solid transparent;
+    transition:.15s;
+    user-select:none;
+  }
+  .status-pill.pendente{background:rgba(148,163,184,.15);color:#cbd5e1;border-color:#475569;}
+  .status-pill.andamento{background:rgba(245,158,11,.18);color:#fcd34d;border-color:#f59e0b;}
+  .status-pill.concluida{background:rgba(34,197,94,.18);color:#86efac;border-color:#22c55e;}
+  .status-pill.active{box-shadow:0 0 0 2px rgba(56,189,248,.5);}
+  .status-pill.disabled{opacity:.5;cursor:not-allowed;}
+
+  /* Resumo checklist */
+  .checklist-summary{
+    margin-top:16px;
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+  }
+  .cl-row{
+    background:#0b1220;
+    border:1px solid var(--border);
+    border-radius:8px;
+    padding:10px 12px;
+  }
+  .cl-row .top{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    font-size:.85rem;
+    margin-bottom:6px;
+    gap:8px;
+    flex-wrap:wrap;
+  }
+  .cl-row .top strong{color:var(--accent);}
+  .bar{
+    height:8px;
+    background:#1e293b;
+    border-radius:999px;
+    overflow:hidden;
+    display:flex;
+  }
+  .bar .seg{height:100%;}
+  .bar .seg.pend{background:#64748b;}
+  .bar .seg.and{background:#f59e0b;}
+  .bar .seg.conc{background:#22c55e;}
+  .legend{display:flex;gap:10px;flex-wrap:wrap;font-size:.72rem;color:var(--muted);margin-top:6px;}
+  .legend span::before{
+    content:"";
+    display:inline-block;
+    width:8px;height:8px;border-radius:2px;
+    margin-right:4px;
+    vertical-align:middle;
+  }
+  .legend .p::before{background:#64748b;}
+  .legend .a::before{background:#f59e0b;}
+  .legend .c::before{background:#22c55e;}
+
+  /* Tabela */
+  .toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;}
+  .toolbar input,.toolbar select{width:auto;flex:1;min-width:140px;}
+  .toolbar button{width:auto;padding:10px 14px;}
+  table{width:100%;border-collapse:collapse;font-size:.9rem;}
+  th,td{padding:10px;border-bottom:1px solid var(--border);text-align:left;vertical-align:top;}
+  th{color:var(--accent);font-size:.8rem;text-transform:uppercase;letter-spacing:.05em;}
+  tr:hover td{background:rgba(56,189,248,.06);}
+  .badge{
+    display:inline-block;
+    padding:2px 8px;
+    border-radius:999px;
+    font-size:.75rem;
+    font-weight:700;
+    background:var(--accent);
+    color:#0f172a;
+  }
+  .mini-bar{
+    display:flex;
+    height:6px;
+    border-radius:999px;
+    overflow:hidden;
+    margin-top:4px;
+    background:#1e293b;
+    min-width:80px;
+  }
+  .mini-bar .seg{height:100%;}
+  .mini-bar .seg.pend{background:#64748b;}
+  .mini-bar .seg.and{background:#f59e0b;}
+  .mini-bar .seg.conc{background:#22c55e;}
+
+  .summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-top:12px;}
+  .summary .box{
+    background:#0b1220;
+    border:1px solid var(--border);
+    border-radius:10px;
+    padding:12px;
+    text-align:center;
+  }
+  .summary .box .num{font-size:1.4rem;font-weight:800;color:var(--accent2);}
+  .summary .box .lbl{font-size:.75rem;color:var(--muted);}
+  .msg{padding:10px 12px;border-radius:8px;margin-bottom:12px;font-size:.9rem;display:none;}
+  .msg.ok{background:rgba(34,197,94,.15);border:1px solid var(--accent2);color:#bbf7d0;display:block;}
+  .msg.err{background:rgba(239,68,68,.15);border:1px solid var(--danger);color:#fecaca;display:block;}
+  .msg.info{background:rgba(56,189,248,.15);border:1px solid var(--accent);color:#bae6fd;display:block;}
+  .empty{text-align:center;color:var(--muted);padding:20px;}
+  .actions button{padding:6px 10px;font-size:.8rem;width:auto;}
+  footer{text-align:center;color:var(--muted);font-size:.8rem;margin-top:24px;}
+
+  /* Modal login admin */
+  .modal-bg{
+    position:fixed;inset:0;background:rgba(0,0,0,.6);
+    display:none;align-items:center;justify-content:center;z-index:50;
+    padding:20px;
+  }
+  .modal-bg.on{display:flex;}
+  .modal{
+    background:var(--card);
+    border:1px solid var(--admin);
+    border-radius:14px;
+    padding:24px;
+    max-width:420px;
+    width:100%;
+    box-shadow:0 20px 50px rgba(0,0,0,.5);
+  }
+  .modal h2{color:var(--admin);}
+  .modal .small{font-size:.8rem;color:var(--muted);margin-top:8px;}
+
+  @media print{
+    body{background:#fff;color:#000;padding:0;}
+    .card{box-shadow:none;border-color:#ccc;background:#fff;color:#000;}
+    button,.toolbar,.topbar{display:none !important;}
+    th{color:#000;}
+    td,th{border-color:#ccc;}
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div class="topbar">
+    <div>
+      <h1>⏱️ Lançamento de Horas – Turma Mecatrônica</h1>
+      <p style="color:var(--muted);margin-top:-4px;">Registre horas por pessoa/data/grupo (G1 a G5) e atualize o checklist.</p>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+      <span id="adminBadge" class="admin-badge">
+        🔓 Admin (G6)
+        <button id="btnLogout">Sair</button>
+      </span>
+      <button id="btnLogin" class="admin" style="width:auto;padding:8px 14px;">🔐 Entrar como Admin (G6)</button>
+    </div>
+  </div>
+
+  <div class="grid">
+    <!-- FORMULÁRIO -->
+    <div class="card">
+      <h2>Novo lançamento</h2>
+      <div id="msg" class="msg"></div>
+
+      <div class="field">
+        <label for="nome">Nome da pessoa *</label>
+        <input type="text" id="nome" placeholder="Ex.: João Silva" required>
+      </div>
+
+      <div class="row">
+        <div class="field">
+          <label for="data">Data *</label>
+          <input type="date" id="data" required>
+        </div>
+        <div class="field">
+          <label for="horas">Horas trabalhadas *</label>
+          <input type="number" id="horas" min="0.1" step="0.1" placeholder="Ex.: 4.5" required>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="grupo">Grupo *</label>
+        <select id="grupo" required>
+          <option value="">Selecione o grupo...</option>
+          <option value="1">G1 – Usinagem CNC & Dispositivos de Fixação</option>
+          <option value="2">G2 – Alimentação & Controle do Sistema de Esteiras</option>
+          <option value="3">G3 – Inspeção por Visão Computacional & Alarme</option>
+          <option value="4">G4 – Dispositivo Mecânico de Montagem & Botoeira</option>
+          <option value="5">G5 – Automação Robótica, Estocagem & SCADA Local</option>
+        </select>
+      </div>
+
+      <div id="groupInfo" class="group-info" style="display:none;"></div>
+
+      <div class="field">
+        <label for="atividade">Descrição da atividade (opcional)</label>
+        <textarea id="atividade" placeholder="Ex.: Projeto do gabarito no SolidWorks..."></textarea>
+      </div>
+
+      <div class="row">
+        <button type="button" id="btnSalvar">💾 Salvar lançamento</button>
+        <button type="button" class="secondary" id="btnLimpar">🧹 Limpar formulário</button>
+      </div>
+    </div>
+
+    <!-- RESUMO -->
+    <div class="card">
+      <h2>Resumo geral</h2>
+      <div class="summary" id="summary"></div>
+
+      <h2 style="margin-top:20px;">Progresso dos checklists por grupo</h2>
+      <div class="legend">
+        <span class="p">Pendente</span>
+        <span class="a">Em andamento</span>
+        <span class="c">Concluída</span>
+      </div>
+      <div id="checklistSummary" class="checklist-summary"></div>
+
+      <h2 style="margin-top:20px;">Horas por grupo</h2>
+      <div id="groupSummary" class="summary"></div>
+    </div>
+  </div>
+
+  <!-- PAINEL ADMIN -->
+  <div id="adminPanel" class="card admin-card" style="margin-top:20px;display:none;">
+    <h2 style="color:var(--admin);">🔐 Painel do Administrador (G6)</h2>
+    <p style="color:var(--muted);font-size:.9rem;">
+      Como admin, você pode editar/excluir qualquer lançamento, resetar status dos checklists, limpar tudo e acompanhar os apontamentos de todos os grupos.
+    </p>
+
+    <div class="row3" style="margin-top:8px;">
+      <button class="warn" id="btnResetChecklists">🔄 Resetar todos os checklists</button>
+      <button class="warn" id="btnMarcarTudoConcluido">✅ Marcar tudo como concluído</button>
+      <button class="danger" id="btnApagarTudo">🗑️ Apagar TODOS os lançamentos</button>
+    </div>
+
+    <h2 style="margin-top:20px;">Status do checklist por grupo</h2>
+    <div id="adminChecklistEditor"></div>
+  </div>
+
+  <!-- TABELA -->
+  <div class="card" style="margin-top:20px;">
+    <h2>Lançamentos registrados</h2>
+    <div class="toolbar">
+      <input type="text" id="filtroNome" placeholder="Filtrar por nome...">
+      <select id="filtroGrupo">
+        <option value="">Todos os grupos</option>
+        <option value="1">G1</option>
+        <option value="2">G2</option>
+        <option value="3">G3</option>
+        <option value="4">G4</option>
+        <option value="5">G5</option>
+      </select>
+      <input type="date" id="filtroData">
+      <button class="secondary" id="btnExportar">⬇️ Exportar CSV</button>
+      <button class="secondary" id="btnImprimir">🖨️ Imprimir</button>
+    </div>
+
+    <div style="overflow-x:auto;">
+      <table>
+        <thead>
+          <tr>
+            <th>Nome</th>
+            <th>Data</th>
+            <th>Grupo</th>
+            <th>Horas</th>
+            <th>Atividade</th>
+            <th>Checklist</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+        <tbody id="tabela"></tbody>
+      </table>
+    </div>
+    <div id="vazio" class="empty">Nenhum lançamento registrado ainda.</div>
+  </div>
+
+  <footer>Projeto acadêmico – Mecatrônica • Dados salvos apenas neste navegador (localStorage).</footer>
+</div>
+
+<!-- MODAL LOGIN ADMIN -->
+<div id="modalLogin" class="modal-bg">
+  <div class="modal">
+    <h2>🔐 Acesso restrito – Grupo 6</h2>
+    <p style="font-size:.9rem;color:var(--muted);">Apenas membros do G6 (Software Industrial, Cloud, Banco de Dados & IA) podem acessar o painel de administração.</p>
+    <div class="field" style="margin-top:12px;">
+      <label for="senhaAdmin">Senha de administrador</label>
+      <input type="password" id="senhaAdmin" placeholder="Digite a senha">
+    </div>
+    <div class="row">
+      <button class="admin" id="btnConfirmarLogin">Entrar</button>
+      <button class="secondary" id="btnCancelarLogin">Cancelar</button>
+    </div>
+    <div class="small">Dica: a senha padrão é <strong>mecatronica6</strong> (troque no código em <code>SENHA_ADMIN</code>).</div>
+  </div>
+</div>
+
+<script>
+/* ======================================================
+   CONFIGURAÇÃO DE ACESSO ADMIN – ALTERE A SENHA AQUI
+   ====================================================== */
+const SENHA_ADMIN = "mecatronica6";
+
+/* ====== DADOS DOS GRUPOS (baseados no arquivo) ====== */
+const GRUPOS = {
+  "1": {
+    area: "Usinagem CNC & Dispositivos de Fixação",
+    entregaveis: [
+      "Projetar no SolidWorks os dispositivos/gabaritos de fixação rápida para prender a placa comemorativa na mesa do Romi D800.",
+      "Elaborar os programas em Código G/M e executar a usinagem das peças comemorativas.",
+      "Elaborar um sistema de contagem e apontamento de produção que envie o sinal e as informações em tempo real para o Dashboard."
+    ]
+  },
+  "2": {
+    area: "Alimentação & Controle do Sistema de Esteiras",
+    entregaveis: [
+      "Projetar no SolidWorks e montar a estrutura do Alimentador Gravimétrico.",
+      "Elaborar um sistema de contagem e apontamento de produção que envie o sinal e as informações em tempo real para o Dashboard.",
+      "Programar no CLP local a lógica de transporte sequencial das peças pela esteira modular."
+    ]
+  },
+  "3": {
+    area: "Inspeção por Visão Computacional & Alarme",
+    entregaveis: [
+      "Projetar no SolidWorks a estrutura do Túnel de Inspeção por Visão instalado sobre a esteira.",
+      "Programar a câmera com Visão Computacional (OpenCV) para validar dimensões e caracteres gravados na placa.",
+      "Elaborar um sistema de contagem e apontamento de produção que envie o sinal e as informações em tempo real para o Dashboard."
+    ]
+  },
+  "4": {
+    area: "Dispositivo Mecânico de Montagem & Botoeira",
+    entregaveis: [
+      "Projetar no SolidWorks e fabricar o Dispositivo Mecânico de Montagem/Gabarito, responsável por alinhar e travar a placa e o suporte para o encaixe.",
+      "Elaborar um sistema de contagem e apontamento de produção que envie o sinal e as informações em tempo real para o Dashboard.",
+      "Programar a validação do encaixe correto e enviar o sinal Montagem_Concluida via rede Ethernet."
+    ]
+  },
+  "5": {
+    area: "Automação Robótica, Estocagem & SCADA Local",
+    entregaveis: [
+      "Programar o manipulador robótico para coletar as peças na esteira/dispositivo e executar as rotinas de Pick & Place na estante.",
+      "Elaborar um sistema de contagem e apontamento de produção que envie o sinal e as informações em tempo real para o Dashboard.",
+      "Desenvolver as telas do Supervisório SCADA (BluePlant) com o sinótico completo da linha e gestão de alarmes."
+    ]
+  }
+  /* G6 foi removido dos grupos operacionais – agora é o grupo ADMINISTRADOR */
+};
+
+const STATUS = {
+  pendente:   { label:"Pendente",      cls:"pendente"  },
+  andamento:  { label:"Em andamento",  cls:"andamento" },
+  concluida:  { label:"Concluída",     cls:"concluida" }
+};
+
+/* ====== ESTADO ====== */
+const STORAGE_KEY = "lancamentos_horas_mecatronica";
+const STATUS_KEY  = "checklist_status_mecatronica";
+const ADMIN_KEY   = "admin_logado_mecatronica";
+
+let lancamentos = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+let statusChecklist = JSON.parse(localStorage.getItem(STATUS_KEY) || "{}");
+let isAdmin = sessionStorage.getItem(ADMIN_KEY) === "1" || localStorage.getItem(ADMIN_KEY) === "1";
+let editandoId = null;
+
+/* ====== ELEMENTOS ====== */
+const el = id => document.getElementById(id);
+const msg = el("msg");
+const tabela = el("tabela");
+const vazio = el("vazio");
+const groupInfo = el("groupInfo");
+
+/* ====== UTILITÁRIOS ====== */
+function mostrarMsg(texto, tipo="ok"){
+  msg.textContent = texto;
+  msg.className = "msg " + tipo;
+  setTimeout(()=>{ msg.className = "msg"; }, 3500);
+}
+function formatarData(iso){
+  if(!iso) return "-";
+  const [a,m,d] = iso.split("-");
+  return `${d}/${m}/${a}`;
+}
+function salvarStorage(){
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(lancamentos));
+  localStorage.setItem(STATUS_KEY, JSON.stringify(statusChecklist));
+}
+function gerarId(){
+  return Date.now().toString(36) + Math.random().toString(36).slice(2,7);
+}
+function garantirStatusGrupo(g){
+  if(!statusChecklist[g]){
+    statusChecklist[g] = {};
+    GRUPOS[g].entregaveis.forEach((_,i) => statusChecklist[g][i] = "pendente");
+    salvarStorage();
+  }
+  return statusChecklist[g];
+}
+function contarStatusGrupo(g){
+  const st = garantirStatusGrupo(g);
+  const total = GRUPOS[g].entregaveis.length;
+  let pend=0, and=0, conc=0;
+  for(let i=0;i<total;i++){
+    const s = st[i] || "pendente";
+    if(s==="concluida") conc++;
+    else if(s==="andamento") and++;
+    else pend++;
+  }
+  return { total, pend, and, conc };
+}
+
+/* ====== ADMIN ====== */
+function atualizarUIAdmin(){
+  el("adminBadge").classList.toggle("on", isAdmin);
+  el("btnLogin").style.display = isAdmin ? "none" : "inline-block";
+  el("adminPanel").style.display = isAdmin ? "block" : "none";
+  if(isAdmin) renderAdminChecklistEditor();
+}
+
+el("btnLogin").addEventListener("click", () => {
+  el("modalLogin").classList.add("on");
+  el("senhaAdmin").value = "";
+  el("senhaAdmin").focus();
+});
+el("btnCancelarLogin").addEventListener("click", () => el("modalLogin").classList.remove("on"));
+el("btnConfirmarLogin").addEventListener("click", () => {
+  const s = el("senhaAdmin").value;
+  if(s === SENHA_ADMIN){
+    isAdmin = true;
+    localStorage.setItem(ADMIN_KEY, "1");
+    el("modalLogin").classList.remove("on");
+    atualizarUIAdmin();
+    render();
+    renderResumo();
+    mostrarMsg("Bem-vindo, administrador (G6)!", "ok");
+  } else {
+    mostrarMsg("Senha incorreta.", "err");
+  }
+});
+el("senhaAdmin").addEventListener("keydown", e => {
+  if(e.key === "Enter") el("btnConfirmarLogin").click();
+});
+el("btnLogout").addEventListener("click", () => {
+  isAdmin = false;
+  localStorage.removeItem(ADMIN_KEY);
+  sessionStorage.removeItem(ADMIN_KEY);
+  atualizarUIAdmin();
+  render();
+  renderResumo();
+  mostrarMsg("Sessão de administrador encerrada.", "info");
+});
+
+/* ====== CHECKLIST NO FORMULÁRIO ====== */
+el("grupo").addEventListener("change", e => {
+  const g = e.target.value;
+  if(!g){ groupInfo.style.display = "none"; return; }
+  garantirStatusGrupo(g);
+  renderGroupInfo(g);
+});
+
+function renderGroupInfo(g){
+  const info = GRUPOS[g];
+  const st = garantirStatusGrupo(g);
+  const podeEditar = isAdmin; // só admin altera status fora do próprio lançamento
+
+  groupInfo.style.display = "block";
+  groupInfo.innerHTML = `
+    <strong>G${g} – ${info.area}</strong>
+    <div class="hint">
+      ${podeEditar
+        ? "Como admin, clique nas pílulas para alterar o status do checklist deste grupo."
+        : "Marque o status do checklist. (Apenas o admin pode alterar depois.)"}
+    </div>
+    <div class="checklist">
+      ${info.entregaveis.map((item, i) => `
+        <div class="check-item">
+          <div class="txt">${i+1}. ${item}</div>
+          <div class="status-row">
+            ${Object.entries(STATUS).map(([key, val]) => `
+              <span class="status-pill ${val.cls} ${(st[i]||"pendente")===key ? "active":""} ${!podeEditar ? "disabled":""}"
+                    data-grupo="${g}" data-item="${i}" data-status="${key}">
+                ${val.label}
+              </span>
+            `).join("")}
+          </div>
+        </div>
+      `).join("")}
+    </div>
+  `;
+
+  if(podeEditar){
+    groupInfo.querySelectorAll(".status-pill").forEach(pill => {
+      pill.addEventListener("click", () => {
+        const grp = pill.dataset.grupo;
+        const it  = pill.dataset.item;
+        const stt = pill.dataset.status;
+        statusChecklist[grp][it] = stt;
+        salvarStorage();
+        renderGroupInfo(grp);
+        renderResumo();
+        render();
+        if(isAdmin) renderAdminChecklistEditor();
+      });
+    });
+  }
+}
+
+/* ====== SALVAR ====== */
+el("btnSalvar").addEventListener("click", () => {
+  const nome = el("nome").value.trim();
+  const data = el("data").value;
+  const horas = parseFloat(el("horas").value);
+  const grupo = el("grupo").value;
+  const atividade = el("atividade").value.trim();
+
+  if(!nome){ return mostrarMsg("Informe o nome da pessoa.", "err"); }
+  if(!data){ return mostrarMsg("Informe a data.", "err"); }
+  if(!horas || horas <= 0){ return mostrarMsg("Informe as horas trabalhadas (maior que 0).", "err"); }
+  if(!grupo){ return mostrarMsg("Selecione o grupo (1 a 5).", "err"); }
+
+  const snapshot = { ...garantirStatusGrupo(grupo) };
+
+  if(editandoId){
+    const idx = lancamentos.findIndex(l => l.id === editandoId);
+    if(idx > -1){
+      if(!isAdmin){
+        /* Usuário comum só pode editar se for o autor? Vamos permitir editar o próprio lançamento
+           (não temos login de usuário, então qualquer um pode editar pelo botão). Mas só admin
+           pode editar lançamentos de OUTROS. Como não há login, restringimos a edição apenas ao admin. */
+        return mostrarMsg("Apenas o administrador (G6) pode editar lançamentos existentes.", "err");
+      }
+      lancamentos[idx] = { ...lancamentos[idx], nome, data, horas, grupo, atividade, checklist: snapshot };
+      mostrarMsg("Lançamento atualizado com sucesso!");
+    }
+    editandoId = null;
+    el("btnSalvar").textContent = "💾 Salvar lançamento";
+  } else {
+    lancamentos.push({ id: gerarId(), nome, data, horas, grupo, atividade, checklist: snapshot });
+    mostrarMsg("Lançamento salvo com sucesso!");
+  }
+
+  salvarStorage();
+  limparFormulario();
+  render();
+  renderResumo();
+  if(isAdmin) renderAdminChecklistEditor();
+});
+
+/* ====== LIMPAR ====== */
+function limparFormulario(){
+  el("nome").value = "";
+  el("data").value = new Date().toISOString().slice(0,10);
+  el("horas").value = "";
+  el("grupo").value = "";
+  el("atividade").value = "";
+  groupInfo.style.display = "none";
+  groupInfo.innerHTML = "";
+  editandoId = null;
+  el("btnSalvar").textContent = "💾 Salvar lançamento";
+}
+el("btnLimpar").addEventListener("click", limparFormulario);
+
+/* ====== MINI BARRA ====== */
+function miniBarra(checklist){
+  const total = Object.keys(checklist||{}).length || 0;
+  if(total === 0) return "";
+  let p=0,a=0,c=0;
+  Object.values(checklist).forEach(s => {
+    if(s==="concluida") c++;
+    else if(s==="andamento") a++;
+    else p++;
+  });
+  const pp = (p/total)*100, pa = (a/total)*100, pc = (c/total)*100;
+  return `
+    <div class="mini-bar" title="P:${p} A:${a} C:${c}">
+      <div class="seg pend" style="width:${pp}%"></div>
+      <div class="seg and"  style="width:${pa}%"></div>
+      <div class="seg conc" style="width:${pc}%"></div>
+    </div>
+    <div style="font-size:.7rem;color:var(--muted);margin-top:2px;">${c}/${total} concluídos</div>
+  `;
+}
+
+/* ====== RENDER TABELA ====== */
+function render(){
+  const filtroNome = el("filtroNome").value.toLowerCase().trim();
+  const filtroGrupo = el("filtroGrupo").value;
+  const filtroData = el("filtroData").value;
+
+  let lista = lancamentos.filter(l => {
+    if(filtroNome && !l.nome.toLowerCase().includes(filtroNome)) return false;
+    if(filtroGrupo && l.grupo !== filtroGrupo) return false;
+    if(filtroData && l.data !== filtroData) return false;
+    return true;
+  });
+
+  lista.sort((a,b) => (b.data || "").localeCompare(a.data || ""));
+
+  tabela.innerHTML = "";
+  if(lista.length === 0){
+    vazio.style.display = "block";
+  } else {
+    vazio.style.display = "none";
+    lista.forEach(l => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${l.nome}</td>
+        <td>${formatarData(l.data)}</td>
+        <td><span class="badge">G${l.grupo}</span></td>
+        <td>${l.horas.toFixed(1)}

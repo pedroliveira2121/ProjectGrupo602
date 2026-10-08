@@ -33,12 +33,14 @@
   .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;box-shadow:0 8px 24px rgba(0,0,0,.25);}
   .card.admin-card{border-color:var(--admin);}
   label{display:block;font-size:.85rem;color:var(--muted);margin-bottom:4px;}
+  label .req{color:var(--danger);font-weight:700;}
   input,select,textarea,button{
     width:100%; padding:10px 12px; border-radius:8px; border:1px solid var(--border);
     background:var(--card2); color:var(--text); font-size:.95rem; outline:none;
   }
   input:focus,select:focus,textarea:focus{border-color:var(--accent);}
   textarea{resize:vertical;min-height:70px;}
+  .invalid{border-color:var(--danger) !important;box-shadow:0 0 0 2px rgba(239,68,68,.25);}
   .row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
   .row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;}
   @media(max-width:600px){.row,.row3{grid-template-columns:1fr;}}
@@ -51,10 +53,12 @@
   button.admin{background:var(--admin);color:#fff;}
   button:disabled{opacity:.5;cursor:not-allowed;}
   .group-info{background:#0b1220;border-left:4px solid var(--accent);padding:12px 14px;border-radius:8px;font-size:.9rem;margin-bottom:12px;}
+  .group-info.invalid{border-left-color:var(--danger);}
   .group-info strong{color:var(--accent);}
   .group-info .hint{color:var(--muted);font-size:.8rem;margin-top:6px;}
   .checklist{margin-top:10px;display:flex;flex-direction:column;gap:8px;}
   .check-item{background:#0f172a;border:1px solid var(--border);border-radius:8px;padding:10px 12px;display:flex;flex-direction:column;gap:8px;}
+  .check-item.unset{border-color:var(--danger);box-shadow:0 0 0 2px rgba(239,68,68,.15);}
   .check-item .txt{font-size:.88rem;line-height:1.35;}
   .status-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
   .status-pill{
@@ -140,23 +144,23 @@
       <div id="msg" class="msg"></div>
 
       <div class="field">
-        <label for="nome">Nome da pessoa *</label>
+        <label for="nome">Nome da pessoa <span class="req">*</span></label>
         <input type="text" id="nome" placeholder="Ex.: João Silva">
       </div>
 
       <div class="row">
         <div class="field">
-          <label for="data">Data *</label>
+          <label for="data">Data <span class="req">*</span></label>
           <input type="date" id="data">
         </div>
         <div class="field">
-          <label for="horas">Horas trabalhadas *</label>
+          <label for="horas">Horas trabalhadas <span class="req">*</span></label>
           <input type="number" id="horas" min="0.1" step="0.1" placeholder="Ex.: 4.5">
         </div>
       </div>
 
       <div class="field">
-        <label for="grupo">Grupo *</label>
+        <label for="grupo">Grupo <span class="req">*</span></label>
         <select id="grupo">
           <option value="">Selecione o grupo...</option>
           <option value="1">G1 – Usinagem CNC & Dispositivos de Fixação</option>
@@ -170,8 +174,8 @@
       <div id="groupInfo" class="group-info" style="display:none;"></div>
 
       <div class="field">
-        <label for="atividade">Descrição da atividade (opcional)</label>
-        <textarea id="atividade" placeholder="Ex.: Projeto do gabarito no SolidWorks..."></textarea>
+        <label for="atividade">Descrição da atividade <span class="req">*</span></label>
+        <textarea id="atividade" placeholder="Descreva o que foi feito neste lançamento (obrigatório)"></textarea>
       </div>
 
       <div class="row">
@@ -306,16 +310,17 @@ const STATUS = {
   concluida: { label:"Concluída",    cls:"concluida" }
 };
 
-const STORAGE_KEY = "lanc_horas_mec_v4";
-const STATUS_KEY  = "lanc_status_mec_v4";
-const ADMIN_KEY   = "lanc_admin_mec_v4";
+const STORAGE_KEY = "lanc_horas_mec_v5";
+const STATUS_KEY  = "lanc_status_mec_v5";
+const ADMIN_KEY   = "lanc_admin_mec_v5";
 
 let lancamentos = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
 let statusChecklist = JSON.parse(localStorage.getItem(STATUS_KEY) || "{}");
 let isAdmin = localStorage.getItem(ADMIN_KEY) === "1";
 let editandoId = null;
 
-/* Rascunho do checklist do formulário (o que o aluno está preenchendo antes de salvar) */
+/* Rascunho do checklist do formulário – guarda o que o usuário já "tocou".
+   Itens não tocados ficam como undefined e são considerados inválidos. */
 let draftChecklist = {};
 
 const el = id => document.getElementById(id);
@@ -328,7 +333,7 @@ function mostrarMsg(texto, tipo="ok"){
   msg.textContent = texto;
   msg.className = "msg " + tipo;
   clearTimeout(mostrarMsg._t);
-  mostrarMsg._t = setTimeout(()=>{ msg.className = "msg"; }, 3500);
+  mostrarMsg._t = setTimeout(()=>{ msg.className = "msg"; }, 4000);
 }
 function formatarData(iso){
   if(!iso) return "-";
@@ -383,7 +388,6 @@ el("btnConfirmarLogin").addEventListener("click", () => {
     localStorage.setItem(ADMIN_KEY, "1");
     el("modalLogin").classList.remove("on");
     atualizarUIAdmin();
-    /* Se já tem um grupo escolhido no form, re-renderiza o checklist agora editável */
     const g = el("grupo").value;
     if(g) renderGroupInfo(g);
     render();
@@ -410,43 +414,44 @@ el("btnLogout").addEventListener("click", () => {
 /* ====== CHECKLIST NO FORMULÁRIO ====== */
 el("grupo").addEventListener("change", e => {
   const g = e.target.value;
-  if(!g){ groupInfo.style.display = "none"; groupInfo.innerHTML = ""; return; }
-  /* Carrega o status atual do grupo como ponto de partida do rascunho */
-  draftChecklist[g] = { ...garantirStatusGrupo(g) };
+  if(!g){ groupInfo.style.display = "none"; groupInfo.innerHTML = ""; draftChecklist = {}; return; }
+  /* Começa o rascunho vazio (nada marcado) – força o usuário a escolher cada item */
+  draftChecklist[g] = {};
   renderGroupInfo(g);
 });
 
 function renderGroupInfo(g){
   const info = GRUPOS[g];
-  /* O status mostrado no formulário é o do RASCUNHO (o que o usuário está preenchendo agora) */
-  if(!draftChecklist[g]) draftChecklist[g] = { ...garantirStatusGrupo(g) };
+  if(!draftChecklist[g]) draftChecklist[g] = {};
   const st = draftChecklist[g];
 
   groupInfo.style.display = "block";
+  groupInfo.classList.remove("invalid");
   groupInfo.innerHTML = `
     <strong>G${g} – ${info.area}</strong>
     <div class="hint">
-      Preencha o status de cada entregável abaixo. Ele será salvo junto com o lançamento.
+      Preencha o status de <strong>todos</strong> os entregáveis. Campos com borda vermelha ainda não foram marcados.
       ${isAdmin ? "Como admin, você também pode ajustar aqui." : "Após salvo, só o admin (G6) poderá alterar."}
     </div>
     <div class="checklist">
-      ${info.entregaveis.map((item, i) => `
-        <div class="check-item">
+      ${info.entregaveis.map((item, i) => {
+        const set = st[i] !== undefined;
+        return `
+        <div class="check-item ${set ? "" : "unset"}" data-check-idx="${i}">
           <div class="txt">${i+1}. ${item}</div>
           <div class="status-row">
             ${Object.entries(STATUS).map(([key, val]) => `
-              <span class="status-pill ${val.cls} ${(st[i]||"pendente")===key ? "active":""}"
+              <span class="status-pill ${val.cls} ${st[i]===key ? "active":""}"
                     data-draft-grupo="${g}" data-draft-item="${i}" data-draft-status="${key}">
                 ${val.label}
               </span>
             `).join("")}
           </div>
         </div>
-      `).join("")}
+      `;}).join("")}
     </div>
   `;
 
-  /* Tanto aluno quanto admin podem alterar o rascunho aqui */
   groupInfo.querySelectorAll("[data-draft-grupo]").forEach(pill => {
     pill.addEventListener("click", () => {
       const grp = pill.dataset.draftGrupo;
@@ -466,14 +471,42 @@ el("btnSalvar").addEventListener("click", () => {
   const grupo = el("grupo").value;
   const atividade = el("atividade").value.trim();
 
-  if(!nome){ return mostrarMsg("Informe o nome da pessoa.","err"); }
-  if(!data){ return mostrarMsg("Informe a data.","err"); }
-  if(!horas || horas <= 0){ return mostrarMsg("Informe as horas trabalhadas (maior que 0).","err"); }
-  if(!grupo){ return mostrarMsg("Selecione o grupo (1 a 5).","err"); }
+  /* Limpa destaques anteriores */
+  ["nome","data","horas","grupo","atividade"].forEach(id => el(id).classList.remove("invalid"));
+  groupInfo.classList.remove("invalid");
+  groupInfo.querySelectorAll(".check-item").forEach(ci => ci.classList.remove("unset"));
 
-  /* Ao salvar, o rascunho vira o status OFICIAL do grupo
-     (se o usuário é aluno, ele "trava" o status; depois só admin muda) */
-  const snapshot = { ...(draftChecklist[grupo] || garantirStatusGrupo(grupo)) };
+  let erros = [];
+
+  if(!nome){ el("nome").classList.add("invalid"); erros.push("Informe o nome da pessoa."); }
+  if(!data){ el("data").classList.add("invalid"); erros.push("Informe a data."); }
+  if(!horas || horas <= 0){ el("horas").classList.add("invalid"); erros.push("Informe as horas trabalhadas (maior que 0)."); }
+  if(!grupo){ el("grupo").classList.add("invalid"); erros.push("Selecione o grupo (1 a 5)."); }
+  if(!atividade){ el("atividade").classList.add("invalid"); erros.push("A descrição da atividade é obrigatória."); }
+
+  /* Validação do checklist: todos os itens precisam estar marcados */
+  if(grupo){
+    const total = GRUPOS[grupo].entregaveis.length;
+    const faltando = [];
+    for(let i=0;i<total;i++){
+      if(draftChecklist[grupo]?.[i] === undefined) faltando.push(i+1);
+    }
+    if(faltando.length > 0){
+      groupInfo.classList.add("invalid");
+      /* Destaca os itens que faltam */
+      groupInfo.querySelectorAll(".check-item").forEach(ci => {
+        const idx = parseInt(ci.dataset.checkIdx, 10);
+        if(faltando.includes(idx+1)) ci.classList.add("unset");
+      });
+      erros.push(`Marque o status de TODOS os entregáveis do checklist (faltam: item(ns) ${faltando.join(", ")}).`);
+    }
+  }
+
+  if(erros.length > 0){
+    return mostrarMsg(erros.join(" "), "err");
+  }
+
+  const snapshot = { ...draftChecklist[grupo] };
   statusChecklist[grupo] = { ...snapshot };
 
   if(editandoId){
@@ -501,6 +534,7 @@ el("btnSalvar").addEventListener("click", () => {
 });
 
 function limparFormulario(){
+  ["nome","data","horas","grupo","atividade"].forEach(id => el(id).classList.remove("invalid"));
   el("nome").value = "";
   el("data").value = new Date().toISOString().slice(0,10);
   el("horas").value = "";
@@ -508,6 +542,7 @@ function limparFormulario(){
   el("atividade").value = "";
   groupInfo.style.display = "none";
   groupInfo.innerHTML = "";
+  groupInfo.classList.remove("invalid");
   editandoId = null;
   draftChecklist = {};
   el("btnSalvar").textContent = "💾 Salvar lançamento";
@@ -647,7 +682,6 @@ tabela.addEventListener("click", e => {
     el("horas").value = item.horas;
     el("grupo").value = item.grupo;
     el("atividade").value = item.atividade || "";
-    /* Ao editar, o rascunho começa com o snapshot do lançamento */
     draftChecklist[item.grupo] = { ...(item.checklist || garantirStatusGrupo(item.grupo)) };
     renderGroupInfo(item.grupo);
     editandoId = id;

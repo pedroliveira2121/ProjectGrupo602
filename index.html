@@ -1,4 +1,4 @@
-# <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
@@ -6,88 +6,36 @@
 <title>Lançamento de Horas – Turma Mecatrônica</title>
 <style>
   :root{
-    --bg:#0f172a;
-    --card:#1e293b;
-    --card2:#334155;
-    --text:#e2e8f0;
-    --muted:#94a3b8;
-    --accent:#38bdf8;
-    --accent2:#22c55e;
-    --warn:#f59e0b;
-    --danger:#ef4444;
-    --admin:#a855f7;
-    --border:#475569;
+    --bg:#0f172a; --card:#1e293b; --card2:#334155;
+    --text:#e2e8f0; --muted:#94a3b8;
+    --accent:#38bdf8; --accent2:#22c55e; --warn:#f59e0b;
+    --danger:#ef4444; --admin:#a855f7; --border:#475569;
   }
   *{box-sizing:border-box;}
   body{
-    margin:0;
-    font-family:system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+    margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
     background:linear-gradient(180deg,#0f172a,#1e293b);
-    color:var(--text);
-    min-height:100vh;
-    padding:24px;
+    color:var(--text); min-height:100vh; padding:24px;
   }
-  h1,h2,h3{margin:0 0 12px;}
-  h1{font-size:1.6rem;}
-  h2{font-size:1.2rem;color:var(--accent);}
+  h1{font-size:1.6rem;margin:0 0 6px;}
+  h2{font-size:1.2rem;color:var(--accent);margin:0 0 12px;}
   .container{max-width:1200px;margin:0 auto;}
-
-  /* Topbar admin */
-  .topbar{
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    gap:12px;
-    flex-wrap:wrap;
-    margin-bottom:8px;
-  }
+  .topbar{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:16px;}
   .admin-badge{
-    background:rgba(168,85,247,.15);
-    border:1px solid var(--admin);
-    color:#e9d5ff;
-    padding:6px 12px;
-    border-radius:999px;
-    font-size:.8rem;
-    font-weight:700;
-    display:none;
-    align-items:center;
-    gap:8px;
+    background:rgba(168,85,247,.15); border:1px solid var(--admin); color:#e9d5ff;
+    padding:6px 12px; border-radius:999px; font-size:.8rem; font-weight:700;
+    display:none; align-items:center; gap:8px;
   }
   .admin-badge.on{display:inline-flex;}
-  .admin-badge button{
-    width:auto;
-    padding:2px 8px;
-    font-size:.75rem;
-    background:transparent;
-    color:#e9d5ff;
-    border:1px solid var(--admin);
-    border-radius:6px;
-  }
-
-  .grid{
-    display:grid;
-    grid-template-columns:1fr 1fr;
-    gap:20px;
-  }
+  .admin-badge button{width:auto;padding:2px 8px;font-size:.75rem;background:transparent;color:#e9d5ff;border:1px solid var(--admin);border-radius:6px;cursor:pointer;}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
   @media(max-width:900px){.grid{grid-template-columns:1fr;}}
-  .card{
-    background:var(--card);
-    border:1px solid var(--border);
-    border-radius:14px;
-    padding:20px;
-    box-shadow:0 8px 24px rgba(0,0,0,.25);
-  }
+  .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;box-shadow:0 8px 24px rgba(0,0,0,.25);}
   .card.admin-card{border-color:var(--admin);}
   label{display:block;font-size:.85rem;color:var(--muted);margin-bottom:4px;}
   input,select,textarea,button{
-    width:100%;
-    padding:10px 12px;
-    border-radius:8px;
-    border:1px solid var(--border);
-    background:var(--card2);
-    color:var(--text);
-    font-size:.95rem;
-    outline:none;
+    width:100%; padding:10px 12px; border-radius:8px; border:1px solid var(--border);
+    background:var(--card2); color:var(--text); font-size:.95rem; outline:none;
   }
   input:focus,select:focus,textarea:focus{border-color:var(--accent);}
   textarea{resize:vertical;min-height:70px;}
@@ -95,115 +43,43 @@
   .row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;}
   @media(max-width:600px){.row,.row3{grid-template-columns:1fr;}}
   .field{margin-bottom:12px;}
-  button{
-    cursor:pointer;
-    background:var(--accent);
-    color:#0f172a;
-    font-weight:700;
-    border:none;
-    transition:.2s;
-  }
+  button{cursor:pointer;background:var(--accent);color:#0f172a;font-weight:700;border:none;transition:.2s;}
   button:hover{filter:brightness(1.1);}
   button.secondary{background:var(--card2);color:var(--text);border:1px solid var(--border);}
   button.danger{background:var(--danger);color:#fff;}
   button.warn{background:var(--warn);color:#0f172a;}
-  button.ok{background:var(--accent2);color:#0f172a;}
   button.admin{background:var(--admin);color:#fff;}
-
-  /* Checklist */
-  .group-info{
-    background:#0b1220;
-    border-left:4px solid var(--accent);
-    padding:12px 14px;
-    border-radius:8px;
-    font-size:.9rem;
-    margin-bottom:12px;
-  }
+  button:disabled{opacity:.5;cursor:not-allowed;}
+  .group-info{background:#0b1220;border-left:4px solid var(--accent);padding:12px 14px;border-radius:8px;font-size:.9rem;margin-bottom:12px;}
   .group-info strong{color:var(--accent);}
   .group-info .hint{color:var(--muted);font-size:.8rem;margin-top:6px;}
   .checklist{margin-top:10px;display:flex;flex-direction:column;gap:8px;}
-  .check-item{
-    background:#0f172a;
-    border:1px solid var(--border);
-    border-radius:8px;
-    padding:10px 12px;
-    display:flex;
-    flex-direction:column;
-    gap:8px;
-  }
+  .check-item{background:#0f172a;border:1px solid var(--border);border-radius:8px;padding:10px 12px;display:flex;flex-direction:column;gap:8px;}
   .check-item .txt{font-size:.88rem;line-height:1.35;}
-  .check-item .status-row{
-    display:flex;
-    align-items:center;
-    gap:8px;
-    flex-wrap:wrap;
-  }
+  .status-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
   .status-pill{
-    display:inline-flex;
-    align-items:center;
-    gap:6px;
-    padding:4px 10px;
-    border-radius:999px;
-    font-size:.75rem;
-    font-weight:700;
-    cursor:pointer;
-    border:1px solid transparent;
-    transition:.15s;
-    user-select:none;
+    display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;
+    font-size:.75rem;font-weight:700;cursor:pointer;border:1px solid transparent;transition:.15s;user-select:none;
   }
   .status-pill.pendente{background:rgba(148,163,184,.15);color:#cbd5e1;border-color:#475569;}
   .status-pill.andamento{background:rgba(245,158,11,.18);color:#fcd34d;border-color:#f59e0b;}
   .status-pill.concluida{background:rgba(34,197,94,.18);color:#86efac;border-color:#22c55e;}
   .status-pill.active{box-shadow:0 0 0 2px rgba(56,189,248,.5);}
   .status-pill.disabled{opacity:.5;cursor:not-allowed;}
-
-  /* Resumo checklist */
-  .checklist-summary{
-    margin-top:16px;
-    display:flex;
-    flex-direction:column;
-    gap:8px;
-  }
-  .cl-row{
-    background:#0b1220;
-    border:1px solid var(--border);
-    border-radius:8px;
-    padding:10px 12px;
-  }
-  .cl-row .top{
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    font-size:.85rem;
-    margin-bottom:6px;
-    gap:8px;
-    flex-wrap:wrap;
-  }
+  .checklist-summary{margin-top:16px;display:flex;flex-direction:column;gap:8px;}
+  .cl-row{background:#0b1220;border:1px solid var(--border);border-radius:8px;padding:10px 12px;}
+  .cl-row .top{display:flex;justify-content:space-between;align-items:center;font-size:.85rem;margin-bottom:6px;gap:8px;flex-wrap:wrap;}
   .cl-row .top strong{color:var(--accent);}
-  .bar{
-    height:8px;
-    background:#1e293b;
-    border-radius:999px;
-    overflow:hidden;
-    display:flex;
-  }
+  .bar{height:8px;background:#1e293b;border-radius:999px;overflow:hidden;display:flex;}
   .bar .seg{height:100%;}
   .bar .seg.pend{background:#64748b;}
   .bar .seg.and{background:#f59e0b;}
   .bar .seg.conc{background:#22c55e;}
   .legend{display:flex;gap:10px;flex-wrap:wrap;font-size:.72rem;color:var(--muted);margin-top:6px;}
-  .legend span::before{
-    content:"";
-    display:inline-block;
-    width:8px;height:8px;border-radius:2px;
-    margin-right:4px;
-    vertical-align:middle;
-  }
+  .legend span::before{content:"";display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:4px;vertical-align:middle;}
   .legend .p::before{background:#64748b;}
   .legend .a::before{background:#f59e0b;}
   .legend .c::before{background:#22c55e;}
-
-  /* Tabela */
   .toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;}
   .toolbar input,.toolbar select{width:auto;flex:1;min-width:140px;}
   .toolbar button{width:auto;padding:10px 14px;}
@@ -211,37 +87,14 @@
   th,td{padding:10px;border-bottom:1px solid var(--border);text-align:left;vertical-align:top;}
   th{color:var(--accent);font-size:.8rem;text-transform:uppercase;letter-spacing:.05em;}
   tr:hover td{background:rgba(56,189,248,.06);}
-  .badge{
-    display:inline-block;
-    padding:2px 8px;
-    border-radius:999px;
-    font-size:.75rem;
-    font-weight:700;
-    background:var(--accent);
-    color:#0f172a;
-  }
-  .mini-bar{
-    display:flex;
-    height:6px;
-    border-radius:999px;
-    overflow:hidden;
-    margin-top:4px;
-    background:#1e293b;
-    min-width:80px;
-  }
+  .badge{display:inline-block;padding:2px 8px;border-radius:999px;font-size:.75rem;font-weight:700;background:var(--accent);color:#0f172a;}
+  .mini-bar{display:flex;height:6px;border-radius:999px;overflow:hidden;margin-top:4px;background:#1e293b;min-width:80px;}
   .mini-bar .seg{height:100%;}
   .mini-bar .seg.pend{background:#64748b;}
   .mini-bar .seg.and{background:#f59e0b;}
   .mini-bar .seg.conc{background:#22c55e;}
-
   .summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-top:12px;}
-  .summary .box{
-    background:#0b1220;
-    border:1px solid var(--border);
-    border-radius:10px;
-    padding:12px;
-    text-align:center;
-  }
+  .summary .box{background:#0b1220;border:1px solid var(--border);border-radius:10px;padding:12px;text-align:center;}
   .summary .box .num{font-size:1.4rem;font-weight:800;color:var(--accent2);}
   .summary .box .lbl{font-size:.75rem;color:var(--muted);}
   .msg{padding:10px 12px;border-radius:8px;margin-bottom:12px;font-size:.9rem;display:none;}
@@ -249,34 +102,18 @@
   .msg.err{background:rgba(239,68,68,.15);border:1px solid var(--danger);color:#fecaca;display:block;}
   .msg.info{background:rgba(56,189,248,.15);border:1px solid var(--accent);color:#bae6fd;display:block;}
   .empty{text-align:center;color:var(--muted);padding:20px;}
-  .actions button{padding:6px 10px;font-size:.8rem;width:auto;}
+  .actions button{padding:6px 10px;font-size:.8rem;width:auto;margin-right:4px;}
   footer{text-align:center;color:var(--muted);font-size:.8rem;margin-top:24px;}
-
-  /* Modal login admin */
-  .modal-bg{
-    position:fixed;inset:0;background:rgba(0,0,0,.6);
-    display:none;align-items:center;justify-content:center;z-index:50;
-    padding:20px;
-  }
+  .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center;z-index:50;padding:20px;}
   .modal-bg.on{display:flex;}
-  .modal{
-    background:var(--card);
-    border:1px solid var(--admin);
-    border-radius:14px;
-    padding:24px;
-    max-width:420px;
-    width:100%;
-    box-shadow:0 20px 50px rgba(0,0,0,.5);
-  }
+  .modal{background:var(--card);border:1px solid var(--admin);border-radius:14px;padding:24px;max-width:420px;width:100%;box-shadow:0 20px 50px rgba(0,0,0,.5);}
   .modal h2{color:var(--admin);}
   .modal .small{font-size:.8rem;color:var(--muted);margin-top:8px;}
-
   @media print{
     body{background:#fff;color:#000;padding:0;}
     .card{box-shadow:none;border-color:#ccc;background:#fff;color:#000;}
-    button,.toolbar,.topbar{display:none !important;}
-    th{color:#000;}
-    td,th{border-color:#ccc;}
+    button,.toolbar,.topbar,.admin-card{display:none !important;}
+    th{color:#000;} td,th{border-color:#ccc;}
   }
 </style>
 </head>
@@ -298,30 +135,29 @@
   </div>
 
   <div class="grid">
-    <!-- FORMULÁRIO -->
     <div class="card">
       <h2>Novo lançamento</h2>
       <div id="msg" class="msg"></div>
 
       <div class="field">
         <label for="nome">Nome da pessoa *</label>
-        <input type="text" id="nome" placeholder="Ex.: João Silva" required>
+        <input type="text" id="nome" placeholder="Ex.: João Silva">
       </div>
 
       <div class="row">
         <div class="field">
           <label for="data">Data *</label>
-          <input type="date" id="data" required>
+          <input type="date" id="data">
         </div>
         <div class="field">
           <label for="horas">Horas trabalhadas *</label>
-          <input type="number" id="horas" min="0.1" step="0.1" placeholder="Ex.: 4.5" required>
+          <input type="number" id="horas" min="0.1" step="0.1" placeholder="Ex.: 4.5">
         </div>
       </div>
 
       <div class="field">
         <label for="grupo">Grupo *</label>
-        <select id="grupo" required>
+        <select id="grupo">
           <option value="">Selecione o grupo...</option>
           <option value="1">G1 – Usinagem CNC & Dispositivos de Fixação</option>
           <option value="2">G2 – Alimentação & Controle do Sistema de Esteiras</option>
@@ -344,7 +180,6 @@
       </div>
     </div>
 
-    <!-- RESUMO -->
     <div class="card">
       <h2>Resumo geral</h2>
       <div class="summary" id="summary"></div>
@@ -362,11 +197,10 @@
     </div>
   </div>
 
-  <!-- PAINEL ADMIN -->
   <div id="adminPanel" class="card admin-card" style="margin-top:20px;display:none;">
     <h2 style="color:var(--admin);">🔐 Painel do Administrador (G6)</h2>
     <p style="color:var(--muted);font-size:.9rem;">
-      Como admin, você pode editar/excluir qualquer lançamento, resetar status dos checklists, limpar tudo e acompanhar os apontamentos de todos os grupos.
+      Edite/exclua qualquer lançamento, altere o status dos checklists de qualquer grupo e gerencie os dados.
     </p>
 
     <div class="row3" style="margin-top:8px;">
@@ -379,7 +213,6 @@
     <div id="adminChecklistEditor"></div>
   </div>
 
-  <!-- TABELA -->
   <div class="card" style="margin-top:20px;">
     <h2>Lançamentos registrados</h2>
     <div class="toolbar">
@@ -419,7 +252,6 @@
   <footer>Projeto acadêmico – Mecatrônica • Dados salvos apenas neste navegador (localStorage).</footer>
 </div>
 
-<!-- MODAL LOGIN ADMIN -->
 <div id="modalLogin" class="modal-bg">
   <div class="modal">
     <h2>🔐 Acesso restrito – Grupo 6</h2>
@@ -432,89 +264,68 @@
       <button class="admin" id="btnConfirmarLogin">Entrar</button>
       <button class="secondary" id="btnCancelarLogin">Cancelar</button>
     </div>
-    <div class="small">Dica: a senha padrão é <strong>mecatronica6</strong> (troque no código em <code>SENHA_ADMIN</code>).</div>
+    <div class="small">Senha padrão: <strong>mecatronica6</strong> (altere no código em <code>SENHA_ADMIN</code>).</div>
   </div>
 </div>
 
 <script>
-/* ======================================================
-   CONFIGURAÇÃO DE ACESSO ADMIN – ALTERE A SENHA AQUI
-   ====================================================== */
+/* ====== ALTERE A SENHA AQUI ====== */
 const SENHA_ADMIN = "mecatronica6";
 
-/* ====== DADOS DOS GRUPOS (baseados no arquivo) ====== */
 const GRUPOS = {
-  "1": {
-    area: "Usinagem CNC & Dispositivos de Fixação",
-    entregaveis: [
-      "Projetar no SolidWorks os dispositivos/gabaritos de fixação rápida para prender a placa comemorativa na mesa do Romi D800.",
-      "Elaborar os programas em Código G/M e executar a usinagem das peças comemorativas.",
-      "Elaborar um sistema de contagem e apontamento de produção que envie o sinal e as informações em tempo real para o Dashboard."
-    ]
-  },
-  "2": {
-    area: "Alimentação & Controle do Sistema de Esteiras",
-    entregaveis: [
-      "Projetar no SolidWorks e montar a estrutura do Alimentador Gravimétrico.",
-      "Elaborar um sistema de contagem e apontamento de produção que envie o sinal e as informações em tempo real para o Dashboard.",
-      "Programar no CLP local a lógica de transporte sequencial das peças pela esteira modular."
-    ]
-  },
-  "3": {
-    area: "Inspeção por Visão Computacional & Alarme",
-    entregaveis: [
-      "Projetar no SolidWorks a estrutura do Túnel de Inspeção por Visão instalado sobre a esteira.",
-      "Programar a câmera com Visão Computacional (OpenCV) para validar dimensões e caracteres gravados na placa.",
-      "Elaborar um sistema de contagem e apontamento de produção que envie o sinal e as informações em tempo real para o Dashboard."
-    ]
-  },
-  "4": {
-    area: "Dispositivo Mecânico de Montagem & Botoeira",
-    entregaveis: [
-      "Projetar no SolidWorks e fabricar o Dispositivo Mecânico de Montagem/Gabarito, responsável por alinhar e travar a placa e o suporte para o encaixe.",
-      "Elaborar um sistema de contagem e apontamento de produção que envie o sinal e as informações em tempo real para o Dashboard.",
-      "Programar a validação do encaixe correto e enviar o sinal Montagem_Concluida via rede Ethernet."
-    ]
-  },
-  "5": {
-    area: "Automação Robótica, Estocagem & SCADA Local",
-    entregaveis: [
-      "Programar o manipulador robótico para coletar as peças na esteira/dispositivo e executar as rotinas de Pick & Place na estante.",
-      "Elaborar um sistema de contagem e apontamento de produção que envie o sinal e as informações em tempo real para o Dashboard.",
-      "Desenvolver as telas do Supervisório SCADA (BluePlant) com o sinótico completo da linha e gestão de alarmes."
-    ]
-  }
-  /* G6 foi removido dos grupos operacionais – agora é o grupo ADMINISTRADOR */
+  "1": { area:"Usinagem CNC & Dispositivos de Fixação", entregaveis:[
+    "Projetar no SolidWorks os dispositivos/gabaritos de fixação rápida para prender a placa comemorativa na mesa do Romi D800.",
+    "Elaborar os programas em Código G/M e executar a usinagem das peças comemorativas.",
+    "Elaborar um sistema de contagem e apontamento de produção que envie o sinal e as informações em tempo real para o Dashboard."
+  ]},
+  "2": { area:"Alimentação & Controle do Sistema de Esteiras", entregaveis:[
+    "Projetar no SolidWorks e montar a estrutura do Alimentador Gravimétrico.",
+    "Elaborar um sistema de contagem e apontamento de produção que envie o sinal e as informações em tempo real para o Dashboard.",
+    "Programar no CLP local a lógica de transporte sequencial das peças pela esteira modular."
+  ]},
+  "3": { area:"Inspeção por Visão Computacional & Alarme", entregaveis:[
+    "Projetar no SolidWorks a estrutura do Túnel de Inspeção por Visão instalado sobre a esteira.",
+    "Programar a câmera com Visão Computacional (OpenCV) para validar dimensões e caracteres gravados na placa.",
+    "Elaborar um sistema de contagem e apontamento de produção que envie o sinal e as informações em tempo real para o Dashboard."
+  ]},
+  "4": { area:"Dispositivo Mecânico de Montagem & Botoeira", entregaveis:[
+    "Projetar no SolidWorks e fabricar o Dispositivo Mecânico de Montagem/Gabarito, responsável por alinhar e travar a placa e o suporte para o encaixe.",
+    "Elaborar um sistema de contagem e apontamento de produção que envie o sinal e as informações em tempo real para o Dashboard.",
+    "Programar a validação do encaixe correto e enviar o sinal Montagem_Concluida via rede Ethernet."
+  ]},
+  "5": { area:"Automação Robótica, Estocagem & SCADA Local", entregaveis:[
+    "Programar o manipulador robótico para coletar as peças na esteira/dispositivo e executar as rotinas de Pick & Place na estante.",
+    "Elaborar um sistema de contagem e apontamento de produção que envie o sinal e as informações em tempo real para o Dashboard.",
+    "Desenvolver as telas do Supervisório SCADA (BluePlant) com o sinótico completo da linha e gestão de alarmes."
+  ]}
 };
 
 const STATUS = {
-  pendente:   { label:"Pendente",      cls:"pendente"  },
-  andamento:  { label:"Em andamento",  cls:"andamento" },
-  concluida:  { label:"Concluída",     cls:"concluida" }
+  pendente:  { label:"Pendente",     cls:"pendente"  },
+  andamento: { label:"Em andamento", cls:"andamento" },
+  concluida: { label:"Concluída",    cls:"concluida" }
 };
 
-/* ====== ESTADO ====== */
-const STORAGE_KEY = "lancamentos_horas_mecatronica";
-const STATUS_KEY  = "checklist_status_mecatronica";
-const ADMIN_KEY   = "admin_logado_mecatronica";
+const STORAGE_KEY = "lanc_horas_mec_v3";
+const STATUS_KEY  = "lanc_status_mec_v3";
+const ADMIN_KEY   = "lanc_admin_mec_v3";
 
 let lancamentos = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
 let statusChecklist = JSON.parse(localStorage.getItem(STATUS_KEY) || "{}");
-let isAdmin = sessionStorage.getItem(ADMIN_KEY) === "1" || localStorage.getItem(ADMIN_KEY) === "1";
+let isAdmin = localStorage.getItem(ADMIN_KEY) === "1";
 let editandoId = null;
 
-/* ====== ELEMENTOS ====== */
 const el = id => document.getElementById(id);
 const msg = el("msg");
 const tabela = el("tabela");
 const vazio = el("vazio");
 const groupInfo = el("groupInfo");
 
-/* ====== UTILITÁRIOS ====== */
 function mostrarMsg(texto, tipo="ok"){
   msg.textContent = texto;
   msg.className = "msg " + tipo;
-  setTimeout(()=>{ msg.className = "msg"; }, 3500);
+  clearTimeout(mostrarMsg._t);
+  mostrarMsg._t = setTimeout(()=>{ msg.className = "msg"; }, 3500);
 }
 function formatarData(iso){
   if(!iso) return "-";
@@ -560,21 +371,20 @@ function atualizarUIAdmin(){
 el("btnLogin").addEventListener("click", () => {
   el("modalLogin").classList.add("on");
   el("senhaAdmin").value = "";
-  el("senhaAdmin").focus();
+  setTimeout(()=>el("senhaAdmin").focus(), 50);
 });
 el("btnCancelarLogin").addEventListener("click", () => el("modalLogin").classList.remove("on"));
 el("btnConfirmarLogin").addEventListener("click", () => {
-  const s = el("senhaAdmin").value;
-  if(s === SENHA_ADMIN){
+  if(el("senhaAdmin").value === SENHA_ADMIN){
     isAdmin = true;
     localStorage.setItem(ADMIN_KEY, "1");
     el("modalLogin").classList.remove("on");
     atualizarUIAdmin();
     render();
     renderResumo();
-    mostrarMsg("Bem-vindo, administrador (G6)!", "ok");
+    mostrarMsg("Bem-vindo, administrador (G6)!","ok");
   } else {
-    mostrarMsg("Senha incorreta.", "err");
+    mostrarMsg("Senha incorreta.","err");
   }
 });
 el("senhaAdmin").addEventListener("keydown", e => {
@@ -583,17 +393,16 @@ el("senhaAdmin").addEventListener("keydown", e => {
 el("btnLogout").addEventListener("click", () => {
   isAdmin = false;
   localStorage.removeItem(ADMIN_KEY);
-  sessionStorage.removeItem(ADMIN_KEY);
   atualizarUIAdmin();
   render();
   renderResumo();
-  mostrarMsg("Sessão de administrador encerrada.", "info");
+  mostrarMsg("Sessão de administrador encerrada.","info");
 });
 
-/* ====== CHECKLIST NO FORMULÁRIO ====== */
+/* ====== CHECKLIST NO FORM ====== */
 el("grupo").addEventListener("change", e => {
   const g = e.target.value;
-  if(!g){ groupInfo.style.display = "none"; return; }
+  if(!g){ groupInfo.style.display = "none"; groupInfo.innerHTML = ""; return; }
   garantirStatusGrupo(g);
   renderGroupInfo(g);
 });
@@ -601,16 +410,14 @@ el("grupo").addEventListener("change", e => {
 function renderGroupInfo(g){
   const info = GRUPOS[g];
   const st = garantirStatusGrupo(g);
-  const podeEditar = isAdmin; // só admin altera status fora do próprio lançamento
+  const podeEditar = isAdmin;
 
   groupInfo.style.display = "block";
   groupInfo.innerHTML = `
     <strong>G${g} – ${info.area}</strong>
-    <div class="hint">
-      ${podeEditar
-        ? "Como admin, clique nas pílulas para alterar o status do checklist deste grupo."
-        : "Marque o status do checklist. (Apenas o admin pode alterar depois.)"}
-    </div>
+    <div class="hint">${podeEditar
+      ? "Como admin, você pode alterar o status clicando nas pílulas."
+      : "O status do checklist é definido pelo administrador (G6)."}</div>
     <div class="checklist">
       ${info.entregaveis.map((item, i) => `
         <div class="check-item">
@@ -631,15 +438,12 @@ function renderGroupInfo(g){
   if(podeEditar){
     groupInfo.querySelectorAll(".status-pill").forEach(pill => {
       pill.addEventListener("click", () => {
-        const grp = pill.dataset.grupo;
-        const it  = pill.dataset.item;
-        const stt = pill.dataset.status;
-        statusChecklist[grp][it] = stt;
+        statusChecklist[pill.dataset.grupo][pill.dataset.item] = pill.dataset.status;
         salvarStorage();
-        renderGroupInfo(grp);
+        renderGroupInfo(pill.dataset.grupo);
         renderResumo();
         render();
-        if(isAdmin) renderAdminChecklistEditor();
+        renderAdminChecklistEditor();
       });
     });
   }
@@ -653,30 +457,28 @@ el("btnSalvar").addEventListener("click", () => {
   const grupo = el("grupo").value;
   const atividade = el("atividade").value.trim();
 
-  if(!nome){ return mostrarMsg("Informe o nome da pessoa.", "err"); }
-  if(!data){ return mostrarMsg("Informe a data.", "err"); }
-  if(!horas || horas <= 0){ return mostrarMsg("Informe as horas trabalhadas (maior que 0).", "err"); }
-  if(!grupo){ return mostrarMsg("Selecione o grupo (1 a 5).", "err"); }
+  if(!nome){ return mostrarMsg("Informe o nome da pessoa.","err"); }
+  if(!data){ return mostrarMsg("Informe a data.","err"); }
+  if(!horas || horas <= 0){ return mostrarMsg("Informe as horas trabalhadas (maior que 0).","err"); }
+  if(!grupo){ return mostrarMsg("Selecione o grupo (1 a 5).","err"); }
 
   const snapshot = { ...garantirStatusGrupo(grupo) };
 
   if(editandoId){
+    if(!isAdmin){
+      mostrarMsg("Apenas o administrador (G6) pode editar lançamentos existentes.","err");
+      return;
+    }
     const idx = lancamentos.findIndex(l => l.id === editandoId);
     if(idx > -1){
-      if(!isAdmin){
-        /* Usuário comum só pode editar se for o autor? Vamos permitir editar o próprio lançamento
-           (não temos login de usuário, então qualquer um pode editar pelo botão). Mas só admin
-           pode editar lançamentos de OUTROS. Como não há login, restringimos a edição apenas ao admin. */
-        return mostrarMsg("Apenas o administrador (G6) pode editar lançamentos existentes.", "err");
-      }
       lancamentos[idx] = { ...lancamentos[idx], nome, data, horas, grupo, atividade, checklist: snapshot };
-      mostrarMsg("Lançamento atualizado com sucesso!");
+      mostrarMsg("Lançamento atualizado com sucesso!","ok");
     }
     editandoId = null;
     el("btnSalvar").textContent = "💾 Salvar lançamento";
   } else {
     lancamentos.push({ id: gerarId(), nome, data, horas, grupo, atividade, checklist: snapshot });
-    mostrarMsg("Lançamento salvo com sucesso!");
+    mostrarMsg("Lançamento salvo com sucesso!","ok");
   }
 
   salvarStorage();
@@ -686,7 +488,6 @@ el("btnSalvar").addEventListener("click", () => {
   if(isAdmin) renderAdminChecklistEditor();
 });
 
-/* ====== LIMPAR ====== */
 function limparFormulario(){
   el("nome").value = "";
   el("data").value = new Date().toISOString().slice(0,10);
@@ -703,14 +504,14 @@ el("btnLimpar").addEventListener("click", limparFormulario);
 /* ====== MINI BARRA ====== */
 function miniBarra(checklist){
   const total = Object.keys(checklist||{}).length || 0;
-  if(total === 0) return "";
+  if(total === 0) return "<span style='color:var(--muted);font-size:.8rem;'>—</span>";
   let p=0,a=0,c=0;
   Object.values(checklist).forEach(s => {
     if(s==="concluida") c++;
     else if(s==="andamento") a++;
     else p++;
   });
-  const pp = (p/total)*100, pa = (a/total)*100, pc = (c/total)*100;
+  const pp=(p/total)*100, pa=(a/total)*100, pc=(c/total)*100;
   return `
     <div class="mini-bar" title="P:${p} A:${a} C:${c}">
       <div class="seg pend" style="width:${pp}%"></div>
@@ -733,7 +534,6 @@ function render(){
     if(filtroData && l.data !== filtroData) return false;
     return true;
   });
-
   lista.sort((a,b) => (b.data || "").localeCompare(a.data || ""));
 
   tabela.innerHTML = "";
@@ -747,4 +547,44 @@ function render(){
         <td>${l.nome}</td>
         <td>${formatarData(l.data)}</td>
         <td><span class="badge">G${l.grupo}</span></td>
-        <td>${l.horas.toFixed(1)}
+        <td>${l.horas.toFixed(1)} h</td>
+        <td>${l.atividade ? l.atividade : "<span style='color:var(--muted)'>—</span>"}</td>
+        <td>${miniBarra(l.checklist)}</td>
+        <td class="actions">
+          ${isAdmin
+            ? `<button class="secondary" data-acao="editar" data-id="${l.id}">✏️ Editar</button>
+               <button class="danger" data-acao="excluir" data-id="${l.id}">🗑️</button>`
+            : `<span style="color:var(--muted);font-size:.75rem;">🔒 só admin</span>`}
+        </td>
+      `;
+      tabela.appendChild(tr);
+    });
+  }
+  renderResumo();
+}
+
+/* ====== RESUMO ====== */
+function renderResumo(){
+  const totalHoras = lancamentos.reduce((s,l) => s + l.horas, 0);
+  const totalLanc = lancamentos.length;
+  const pessoas = new Set(lancamentos.map(l => l.nome.toLowerCase())).size;
+  const gruposAtivos = new Set(lancamentos.map(l => l.grupo)).size;
+
+  el("summary").innerHTML = `
+    <div class="box"><div class="num">${totalHoras.toFixed(1)}</div><div class="lbl">Horas totais</div></div>
+    <div class="box"><div class="num">${totalLanc}</div><div class="lbl">Lançamentos</div></div>
+    <div class="box"><div class="num">${pessoas}</div><div class="lbl">Pessoas</div></div>
+    <div class="box"><div class="num">${gruposAtivos}/5</div><div class="lbl">Grupos ativos</div></div>
+  `;
+
+  const porGrupo = {};
+  for(let i=1;i<=5;i++) porGrupo[i] = { horas:0, lanc:0 };
+  lancamentos.forEach(l => {
+    if(porGrupo[l.grupo]){
+      porGrupo[l.grupo].horas += l.horas;
+      porGrupo[l.grupo].lanc += 1;
+    }
+  });
+  el("groupSummary").innerHTML = Object.entries(porGrupo).map(([g,d]) => `
+    <div class="box">
+      <div class="num">${d.horas.toFixed

@@ -98,7 +98,7 @@
   .modal{background:var(--card);border:1px solid var(--admin);border-radius:14px;padding:24px;max-width:420px;width:100%;box-shadow:0 20px 50px rgba(0,0,0,.5);}
   .modal h2{color:var(--admin);}
   .modal .small{font-size:.8rem;color:var(--muted);margin-top:8px;}
-  .status-bar{display:flex;align-items:center;gap:10px;font-size:.78rem;color:var(--muted);margin-bottom:10px;flex-wrap:wrap;}
+  .status-bar{display:flex;align-items:center;gap:10px;font-size:.78rem;color:var(--muted);margin-bottom:10px;}
   .dot{width:9px;height:9px;border-radius:50%;background:#64748b;display:inline-block;}
   .dot.on{background:var(--accent2);box-shadow:0 0 8px rgba(34,197,94,.7);}
   .dot.sync{background:var(--warn);animation:pulse 1s infinite;}
@@ -273,18 +273,18 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 /* ============================================================
-   ⚙️  CREDENCIAIS DO SUPABASE (já configuradas)
+   ⚙️  CONFIGURAÇÃO – SUBSTITUA PELOS SEUS DADOS DO SUPABASE
    ============================================================ */
-const SUPABASE_URL = "https://rtnhyjlmpicrautmxeju.supabase.co";
-const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ0bmh5amxtcGljcmF1dG14ZWp1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE1MDM3MjEsImV4cCI6MjEwNzA3OTcyMX0.VMOAMr_O38vCsYrV7z9P-oMEvvUfwPfUM_EI3ZpaQ1w";
+const SUPABASE_URL = "COLE_AQUI_A_URL_DO_SEU_PROJETO";
+const SUPABASE_KEY = "COLE_AQUI_A_ANON_PUBLIC_KEY";
 
 const SENHA_ADMIN = "mecatronica6";
-const INTERVALO_MS = 15000;
+const INTERVALO_MS = 15000; // atualiza a cada 15s
 
 /* ====== Supabase ====== */
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-/* ====== Grupos ====== */
+/* ====== Dados fixos dos grupos ====== */
 const GRUPOS = {
   "1": { area:"Usinagem CNC & Dispositivos de Fixação", entregaveis:[
     "Projetar no SolidWorks os dispositivos/gabaritos de fixação rápida para prender a placa comemorativa na mesa do Romi D800.",
@@ -321,8 +321,8 @@ const STATUS = {
 
 /* ====== Estado ====== */
 let lancamentos = [];
-let statusChecklist = {};
-let isAdmin = localStorage.getItem("lanc_admin_mec_v8") === "1";
+let statusChecklist = {};  // { "1": {0:"pendente",...} }
+let isAdmin = localStorage.getItem("lanc_admin_mec_v7") === "1";
 let editandoId = null;
 let draftChecklist = {};
 let timerSync = null;
@@ -377,21 +377,24 @@ function marcarUltimaAtualizacao(){
   txtUltima.textContent = "Última atualização: " + new Date().toLocaleTimeString("pt-BR");
 }
 
-/* ====== Carregar do Supabase ====== */
+/* ====== Carregar dados do Supabase ====== */
 async function carregarTudo(silencioso=false){
   if(!silencioso) setStatusConexao("sync", "Sincronizando...");
   try{
+    /* Lançamentos */
     const { data: lanc, error: e1 } = await sb
       .from("lancamentos")
       .select("*")
       .order("data", { ascending: false });
     if(e1) throw e1;
 
+    /* Status dos checklists */
     const { data: st, error: e2 } = await sb
       .from("checklist_status")
       .select("*");
     if(e2) throw e2;
 
+    /* Compara para não re-renderizar sem necessidade (evita piscar) */
     const antes = JSON.stringify({l:lancamentos, s:statusChecklist});
     lancamentos = lanc || [];
     statusChecklist = {};
@@ -410,18 +413,18 @@ async function carregarTudo(silencioso=false){
   }catch(err){
     console.error(err);
     setStatusConexao("", "Erro de conexão");
-    if(!silencioso) mostrarMsg("Erro ao carregar: " + (err.message||err), "err");
+    if(!silencioso) mostrarMsg("Erro ao carregar dados: " + (err.message||err), "err");
   }
 }
 
-/* ====== Salvar status do grupo ====== */
+/* ====== Salvar status de um grupo no Supabase ====== */
 async function salvarStatusGrupo(g){
   const payload = { grupo: g, status: statusChecklist[g] || {}, updated_at: new Date().toISOString() };
   const { error } = await sb.from("checklist_status").upsert(payload, { onConflict:"grupo" });
   if(error) console.error("Erro ao salvar status:", error);
 }
 
-/* ====== Admin ====== */
+/* ====== Admin UI ====== */
 function atualizarUIAdmin(){
   el("adminBadge").classList.toggle("on", isAdmin);
   el("btnLogin").style.display = isAdmin ? "none" : "inline-block";
@@ -437,7 +440,7 @@ el("btnCancelarLogin").addEventListener("click", () => el("modalLogin").classLis
 el("btnConfirmarLogin").addEventListener("click", () => {
   if(el("senhaAdmin").value === SENHA_ADMIN){
     isAdmin = true;
-    localStorage.setItem("lanc_admin_mec_v8", "1");
+    localStorage.setItem("lanc_admin_mec_v7", "1");
     el("modalLogin").classList.remove("on");
     atualizarUIAdmin();
     const g = el("grupo").value;
@@ -453,7 +456,7 @@ el("senhaAdmin").addEventListener("keydown", e => {
 });
 el("btnLogout").addEventListener("click", () => {
   isAdmin = false;
-  localStorage.removeItem("lanc_admin_mec_v8");
+  localStorage.removeItem("lanc_admin_mec_v7");
   atualizarUIAdmin();
   const g = el("grupo").value;
   if(g) renderGroupInfo(g);
@@ -465,7 +468,7 @@ el("btnLogout").addEventListener("click", () => {
 el("grupo").addEventListener("change", e => {
   const g = e.target.value;
   if(!g){ groupInfo.style.display="none"; groupInfo.innerHTML=""; draftChecklist={}; return; }
-  draftChecklist[g] = {};
+  draftChecklist[g] = {};   // começa vazio – obrigatório marcar cada item
   renderGroupInfo(g);
 });
 
@@ -521,4 +524,360 @@ el("btnSalvar").addEventListener("click", async () => {
   groupInfo.classList.remove("invalid");
   groupInfo.querySelectorAll(".check-item").forEach(ci => ci.classList.remove("unset"));
 
-  let erros
+  let erros = [];
+  if(!nome){ el("nome").classList.add("invalid"); erros.push("Informe o nome."); }
+  if(!data){ el("data").classList.add("invalid"); erros.push("Informe a data."); }
+  if(!horas || horas <= 0){ el("horas").classList.add("invalid"); erros.push("Informe as horas (> 0)."); }
+  if(!grupo){ el("grupo").classList.add("invalid"); erros.push("Selecione o grupo."); }
+  if(!atividade){ el("atividade").classList.add("invalid"); erros.push("A descrição da atividade é obrigatória."); }
+
+  if(grupo){
+    const total = GRUPOS[grupo].entregaveis.length;
+    const faltando = [];
+    for(let i=0;i<total;i++){
+      if(draftChecklist[grupo]?.[i] === undefined) faltando.push(i+1);
+    }
+    if(faltando.length > 0){
+      groupInfo.classList.add("invalid");
+      groupInfo.querySelectorAll(".check-item").forEach(ci => {
+        const idx = parseInt(ci.dataset.checkIdx,10);
+        if(faltando.includes(idx+1)) ci.classList.add("unset");
+      });
+      erros.push(`Marque o status de TODOS os entregáveis (faltam: ${faltando.join(", ")}).`);
+    }
+  }
+
+  if(erros.length) return mostrarMsg(erros.join(" "), "err");
+
+  const snapshot = { ...draftChecklist[grupo] };
+  statusChecklist[grupo] = { ...snapshot };
+
+  setStatusConexao("sync","Enviando...");
+
+  try{
+    if(editandoId){
+      if(!isAdmin){
+        setStatusConexao("on","Conectado");
+        return mostrarMsg("Apenas o administrador (G6) pode editar lançamentos existentes.","err");
+      }
+      const { error } = await sb.from("lancamentos").update({
+        nome, data, horas, grupo, atividade, checklist: snapshot
+      }).eq("id", editandoId);
+      if(error) throw error;
+      mostrarMsg("Lançamento atualizado com sucesso!","ok");
+      editandoId = null;
+      el("btnSalvar").textContent = "💾 Salvar lançamento";
+    } else {
+      const { error } = await sb.from("lancamentos").insert([{
+        nome, data, horas, grupo, atividade, checklist: snapshot
+      }]);
+      if(error) throw error;
+      mostrarMsg("Lançamento salvo com sucesso!","ok");
+    }
+
+    /* Atualiza o status oficial do grupo também */
+    await salvarStatusGrupo(grupo);
+
+    limparFormulario();
+    await carregarTudo(true);
+    setStatusConexao("on","Conectado (dados compartilhados)");
+  }catch(err){
+    console.error(err);
+    setStatusConexao("on","Conectado");
+    mostrarMsg("Erro ao salvar: " + (err.message||err),"err");
+  }
+});
+
+function limparFormulario(){
+  ["nome","data","horas","grupo","atividade"].forEach(id => el(id).classList.remove("invalid"));
+  el("nome").value = "";
+  el("data").value = new Date().toISOString().slice(0,10);
+  el("horas").value = "";
+  el("grupo").value = "";
+  el("atividade").value = "";
+  groupInfo.style.display = "none";
+  groupInfo.innerHTML = "";
+  groupInfo.classList.remove("invalid");
+  editandoId = null;
+  draftChecklist = {};
+  el("btnSalvar").textContent = "💾 Salvar lançamento";
+}
+el("btnLimpar").addEventListener("click", limparFormulario);
+
+/* ====== Mini barra ====== */
+function miniBarra(checklist){
+  const total = Object.keys(checklist||{}).length || 0;
+  if(total === 0) return "<span style='color:var(--muted);font-size:.8rem;'>—</span>";
+  let p=0,a=0,c=0;
+  Object.values(checklist).forEach(s => {
+    if(s==="concluida") c++;
+    else if(s==="andamento") a++;
+    else p++;
+  });
+  const pp=(p/total)*100, pa=(a/total)*100, pc=(c/total)*100;
+  return `
+    <div class="mini-bar" title="P:${p} A:${a} C:${c}">
+      <div class="seg pend" style="width:${pp}%"></div>
+      <div class="seg and"  style="width:${pa}%"></div>
+      <div class="seg conc" style="width:${pc}%"></div>
+    </div>
+    <div style="font-size:.7rem;color:var(--muted);margin-top:2px;">${c}/${total} concluídos</div>
+  `;
+}
+
+/* ====== Tabela ====== */
+function render(){
+  const filtroNome = el("filtroNome").value.toLowerCase().trim();
+  const filtroGrupo = el("filtroGrupo").value;
+  const filtroData = el("filtroData").value;
+
+  let lista = lancamentos.filter(l => {
+    if(filtroNome && !l.nome.toLowerCase().includes(filtroNome)) return false;
+    if(filtroGrupo && l.grupo !== filtroGrupo) return false;
+    if(filtroData && l.data !== filtroData) return false;
+    return true;
+  });
+  lista.sort((a,b) => (b.data || "").localeCompare(a.data || ""));
+
+  tabela.innerHTML = "";
+  if(lista.length === 0){
+    vazio.style.display = "block";
+  } else {
+    vazio.style.display = "none";
+    lista.forEach(l => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${l.nome}</td>
+        <td>${formatarData(l.data)}</td>
+        <td><span class="badge">G${l.grupo}</span></td>
+        <td>${Number(l.horas).toFixed(1)} h</td>
+        <td>${l.atividade ? l.atividade : "<span style='color:var(--muted)'>—</span>"}</td>
+        <td>${miniBarra(l.checklist)}</td>
+        <td class="actions">
+          ${isAdmin
+            ? `<button class="secondary" data-acao="editar" data-id="${l.id}">✏️ Editar</button>
+               <button class="danger" data-acao="excluir" data-id="${l.id}">🗑️</button>`
+            : `<span style="color:var(--muted);font-size:.75rem;">🔒 só admin</span>`}
+        </td>
+      `;
+      tabela.appendChild(tr);
+    });
+  }
+  renderResumo();
+}
+
+/* ====== Resumo ====== */
+function renderResumo(){
+  const totalHoras = lancamentos.reduce((s,l) => s + Number(l.horas||0), 0);
+  const totalLanc = lancamentos.length;
+  const pessoas = new Set(lancamentos.map(l => (l.nome||"").toLowerCase())).size;
+  const gruposAtivos = new Set(lancamentos.map(l => l.grupo)).size;
+
+  el("summary").innerHTML = `
+    <div class="box"><div class="num">${totalHoras.toFixed(1)}</div><div class="lbl">Horas totais</div></div>
+    <div class="box"><div class="num">${totalLanc}</div><div class="lbl">Lançamentos</div></div>
+    <div class="box"><div class="num">${pessoas}</div><div class="lbl">Pessoas</div></div>
+    <div class="box"><div class="num">${gruposAtivos}/5</div><div class="lbl">Grupos ativos</div></div>
+  `;
+
+  const porGrupo = {};
+  for(let i=1;i<=5;i++) porGrupo[i] = { horas:0, lanc:0 };
+  lancamentos.forEach(l => {
+    if(porGrupo[l.grupo]){
+      porGrupo[l.grupo].horas += Number(l.horas||0);
+      porGrupo[l.grupo].lanc += 1;
+    }
+  });
+  el("groupSummary").innerHTML = Object.entries(porGrupo).map(([g,d]) => `
+    <div class="box">
+      <div class="num">${d.horas.toFixed(1)}h</div>
+      <div class="lbl">G${g} • ${d.lanc} lanç.</div>
+    </div>
+  `).join("");
+
+  el("checklistSummary").innerHTML = Object.keys(GRUPOS).map(g => {
+    const c = contarStatusGrupo(g);
+    const pp=(c.pend/c.total)*100, pa=(c.and/c.total)*100, pc=(c.conc/c.total)*100;
+    const pctConc = c.total ? Math.round((c.conc/c.total)*100) : 0;
+    return `
+      <div class="cl-row">
+        <div class="top">
+          <strong>G${g} – ${GRUPOS[g].area}</strong>
+          <span>${c.conc}/${c.total} • ${pctConc}%</span>
+        </div>
+        <div class="bar">
+          <div class="seg pend" style="width:${pp}%"></div>
+          <div class="seg and"  style="width:${pa}%"></div>
+          <div class="seg conc" style="width:${pc}%"></div>
+        </div>
+      </div>
+    `;
+  }).join("");
+}
+
+/* ====== Ações da tabela ====== */
+tabela.addEventListener("click", async e => {
+  const btn = e.target.closest("button[data-acao]");
+  if(!btn) return;
+  const id = btn.dataset.id;
+  const acao = btn.dataset.acao;
+  const item = lancamentos.find(l => l.id === id);
+  if(!item) return;
+
+  if(acao === "excluir"){
+    if(!confirm(`Excluir o lançamento de ${item.nome}?`)){
+      return;
+    }
+    setStatusConexao("sync","Excluindo...");
+    const { error } = await sb.from("lancamentos").delete().eq("id", id);
+    if(error){ console.error(error); mostrarMsg("Erro ao excluir.","err"); }
+    else {
+      mostrarMsg("Lançamento excluído.","info");
+      await carregarTudo(true);
+    }
+    setStatusConexao("on","Conectado (dados compartilhados)");
+  } else if(acao === "editar"){
+    el("nome").value = item.nome;
+    el("data").value = item.data;
+    el("horas").value = item.horas;
+    el("grupo").value = item.grupo;
+    el("atividade").value = item.atividade || "";
+    draftChecklist[item.grupo] = { ...(item.checklist || garantirStatusGrupoLocal(item.grupo)) };
+    renderGroupInfo(item.grupo);
+    editandoId = id;
+    el("btnSalvar").textContent = "💾 Atualizar lançamento";
+    window.scrollTo({ top:0, behavior:"smooth" });
+  }
+});
+
+/* ====== Filtros ====== */
+el("filtroNome").addEventListener("input", render);
+el("filtroGrupo").addEventListener("change", render);
+el("filtroData").addEventListener("change", render);
+
+/* ====== Painel Admin ====== */
+function renderAdminChecklistEditor(){
+  const cont = el("adminChecklistEditor");
+  if(!isAdmin){ cont.innerHTML = ""; return; }
+  cont.innerHTML = Object.keys(GRUPOS).map(g => {
+    const info = GRUPOS[g];
+    const st = garantirStatusGrupoLocal(g);
+    return `
+      <div class="cl-row" style="margin-bottom:10px;">
+        <div class="top"><strong>G${g} – ${info.area}</strong></div>
+        <div class="checklist">
+          ${info.entregaveis.map((item, i) => `
+            <div class="check-item">
+              <div class="txt">${i+1}. ${item}</div>
+              <div class="status-row">
+                ${Object.entries(STATUS).map(([key, val]) => `
+                  <span class="status-pill ${val.cls} ${(st[i]||"pendente")===key ? "active":""}"
+                        data-admin-grupo="${g}" data-admin-item="${i}" data-admin-status="${key}">
+                    ${val.label}
+                  </span>
+                `).join("")}
+              </div>
+            </div>
+          `).join("")}
+        </div>
+      </div>
+    `;
+  }).join("");
+
+  cont.querySelectorAll("[data-admin-grupo]").forEach(pill => {
+    pill.addEventListener("click", async () => {
+      statusChecklist[pill.dataset.adminGrupo][pill.dataset.adminItem] = pill.dataset.adminStatus;
+      renderAdminChecklistEditor();
+      renderResumo();
+      render();
+      await salvarStatusGrupo(pill.dataset.adminGrupo);
+      mostrarMsg("Status do checklist atualizado (nuvem).","ok");
+    });
+  });
+}
+
+el("btnResetChecklists").addEventListener("click", async () => {
+  if(!isAdmin) return;
+  if(!confirm("Resetar TODOS os checklists para 'Pendente'?")) return;
+  Object.keys(GRUPOS).forEach(g => {
+    statusChecklist[g] = {};
+    GRUPOS[g].entregaveis.forEach((_,i) => statusChecklist[g][i] = "pendente");
+  });
+  for(const g of Object.keys(GRUPOS)) await salvarStatusGrupo(g);
+  renderAdminChecklistEditor(); renderResumo(); render();
+  mostrarMsg("Checklists resetados.","info");
+});
+
+el("btnMarcarTudoConcluido").addEventListener("click", async () => {
+  if(!isAdmin) return;
+  if(!confirm("Marcar TODOS os itens de TODOS os grupos como 'Concluída'?")) return;
+  Object.keys(GRUPOS).forEach(g => {
+    statusChecklist[g] = {};
+    GRUPOS[g].entregaveis.forEach((_,i) => statusChecklist[g][i] = "concluida");
+  });
+  for(const g of Object.keys(GRUPOS)) await salvarStatusGrupo(g);
+  renderAdminChecklistEditor(); renderResumo(); render();
+  mostrarMsg("Todos os checklists marcados como concluídos.","ok");
+});
+
+el("btnApagarTudo").addEventListener("click", async () => {
+  if(!isAdmin) return;
+  if(!confirm("Apagar TODOS os lançamentos? Essa ação não pode ser desfeita.")) return;
+  setStatusConexao("sync","Apagando...");
+  const { error } = await sb.from("lancamentos").delete().neq("id","00000000-0000-0000-0000-000000000000");
+  if(error){ console.error(error); mostrarMsg("Erro ao apagar.","err"); }
+  else {
+    mostrarMsg("Todos os lançamentos foram apagados.","info");
+    await carregarTudo(true);
+  }
+  setStatusConexao("on","Conectado (dados compartilhados)");
+});
+
+/* ====== Exportar CSV ====== */
+el("btnExportar").addEventListener("click", () => {
+  if(lancamentos.length === 0) return mostrarMsg("Nada para exportar.","err");
+  const cab = ["Nome","Data","Grupo","Area","Horas","Atividade","Pendentes","Em andamento","Concluidas"];
+  const linhas = lancamentos.map(l => {
+    const cl = l.checklist || {};
+    let p=0,a=0,c=0;
+    Object.values(cl).forEach(s => {
+      if(s==="concluida") c++;
+      else if(s==="andamento") a++;
+      else p++;
+    });
+    return [
+      l.nome, formatarData(l.data), "G"+l.grupo, GRUPOS[l.grupo]?.area || "",
+      Number(l.horas).toFixed(1).replace(".", ","),
+      (l.atividade || "").replace(/;/g, ","), p, a, c
+    ];
+  });
+  const csv = [cab, ...linhas].map(linha => linha.map(c => `"${c}"`).join(";")).join("\n");
+  const blob = new Blob(["\uFEFF" + csv], { type:"text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `lancamentos_horas_${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+  mostrarMsg("CSV exportado.","ok");
+});
+
+el("btnImprimir").addEventListener("click", () => window.print());
+
+el("btnAtualizar").addEventListener("click", () => carregarTudo(false));
+
+/* ====== Init ====== */
+(async function init(){
+  el("data").value = new Date().toISOString().slice(0,10);
+  atualizarUIAdmin();
+  await carregarTudo(false);
+  /* Sincronização automática a cada 15s */
+  timerSync = setInterval(() => carregarTudo(true), INTERVALO_MS);
+  /* Atualiza ao voltar para a aba */
+  document.addEventListener("visibilitychange", () => {
+    if(!document.hidden) carregarTudo(true);
+  });
+})();
+</script>
+</body>
+</html>

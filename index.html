@@ -98,7 +98,7 @@
   .modal{background:var(--card);border:1px solid var(--admin);border-radius:14px;padding:24px;max-width:420px;width:100%;box-shadow:0 20px 50px rgba(0,0,0,.5);}
   .modal h2{color:var(--admin);}
   .modal .small{font-size:.8rem;color:var(--muted);margin-top:8px;}
-  .status-bar{display:flex;align-items:center;gap:10px;font-size:.78rem;color:var(--muted);margin-bottom:10px;}
+  .status-bar{display:flex;align-items:center;gap:10px;font-size:.78rem;color:var(--muted);margin-bottom:10px;flex-wrap:wrap;}
   .dot{width:9px;height:9px;border-radius:50%;background:#64748b;display:inline-block;}
   .dot.on{background:var(--accent2);box-shadow:0 0 8px rgba(34,197,94,.7);}
   .dot.sync{background:var(--warn);animation:pulse 1s infinite;}
@@ -273,18 +273,18 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 /* ============================================================
-   ⚙️  CONFIGURAÇÃO – SUBSTITUA PELOS SEUS DADOS DO SUPABASE
+   ⚙️  CREDENCIAIS DO SUPABASE (já configuradas)
    ============================================================ */
-const SUPABASE_URL = "COLE_AQUI_A_URL_DO_SEU_PROJETO";
-const SUPABASE_KEY = "COLE_AQUI_A_ANON_PUBLIC_KEY";
+const SUPABASE_URL = "https://rtnhyjlmpicrautmxeju.supabase.co";
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ0bmh5amxtcGljcmF1dG14ZWp1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE1MDM3MjEsImV4cCI6MjEwNzA3OTcyMX0.VMOAMr_O38vCsYrV7z9P-oMEvvUfwPfUM_EI3ZpaQ1w";
 
 const SENHA_ADMIN = "mecatronica6";
-const INTERVALO_MS = 15000; // atualiza a cada 15s
+const INTERVALO_MS = 15000;
 
 /* ====== Supabase ====== */
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-/* ====== Dados fixos dos grupos ====== */
+/* ====== Grupos ====== */
 const GRUPOS = {
   "1": { area:"Usinagem CNC & Dispositivos de Fixação", entregaveis:[
     "Projetar no SolidWorks os dispositivos/gabaritos de fixação rápida para prender a placa comemorativa na mesa do Romi D800.",
@@ -321,8 +321,8 @@ const STATUS = {
 
 /* ====== Estado ====== */
 let lancamentos = [];
-let statusChecklist = {};  // { "1": {0:"pendente",...} }
-let isAdmin = localStorage.getItem("lanc_admin_mec_v7") === "1";
+let statusChecklist = {};
+let isAdmin = localStorage.getItem("lanc_admin_mec_v8") === "1";
 let editandoId = null;
 let draftChecklist = {};
 let timerSync = null;
@@ -377,24 +377,21 @@ function marcarUltimaAtualizacao(){
   txtUltima.textContent = "Última atualização: " + new Date().toLocaleTimeString("pt-BR");
 }
 
-/* ====== Carregar dados do Supabase ====== */
+/* ====== Carregar do Supabase ====== */
 async function carregarTudo(silencioso=false){
   if(!silencioso) setStatusConexao("sync", "Sincronizando...");
   try{
-    /* Lançamentos */
     const { data: lanc, error: e1 } = await sb
       .from("lancamentos")
       .select("*")
       .order("data", { ascending: false });
     if(e1) throw e1;
 
-    /* Status dos checklists */
     const { data: st, error: e2 } = await sb
       .from("checklist_status")
       .select("*");
     if(e2) throw e2;
 
-    /* Compara para não re-renderizar sem necessidade (evita piscar) */
     const antes = JSON.stringify({l:lancamentos, s:statusChecklist});
     lancamentos = lanc || [];
     statusChecklist = {};
@@ -413,18 +410,18 @@ async function carregarTudo(silencioso=false){
   }catch(err){
     console.error(err);
     setStatusConexao("", "Erro de conexão");
-    if(!silencioso) mostrarMsg("Erro ao carregar dados: " + (err.message||err), "err");
+    if(!silencioso) mostrarMsg("Erro ao carregar: " + (err.message||err), "err");
   }
 }
 
-/* ====== Salvar status de um grupo no Supabase ====== */
+/* ====== Salvar status do grupo ====== */
 async function salvarStatusGrupo(g){
   const payload = { grupo: g, status: statusChecklist[g] || {}, updated_at: new Date().toISOString() };
   const { error } = await sb.from("checklist_status").upsert(payload, { onConflict:"grupo" });
   if(error) console.error("Erro ao salvar status:", error);
 }
 
-/* ====== Admin UI ====== */
+/* ====== Admin ====== */
 function atualizarUIAdmin(){
   el("adminBadge").classList.toggle("on", isAdmin);
   el("btnLogin").style.display = isAdmin ? "none" : "inline-block";
@@ -440,7 +437,7 @@ el("btnCancelarLogin").addEventListener("click", () => el("modalLogin").classLis
 el("btnConfirmarLogin").addEventListener("click", () => {
   if(el("senhaAdmin").value === SENHA_ADMIN){
     isAdmin = true;
-    localStorage.setItem("lanc_admin_mec_v7", "1");
+    localStorage.setItem("lanc_admin_mec_v8", "1");
     el("modalLogin").classList.remove("on");
     atualizarUIAdmin();
     const g = el("grupo").value;
@@ -456,7 +453,7 @@ el("senhaAdmin").addEventListener("keydown", e => {
 });
 el("btnLogout").addEventListener("click", () => {
   isAdmin = false;
-  localStorage.removeItem("lanc_admin_mec_v7");
+  localStorage.removeItem("lanc_admin_mec_v8");
   atualizarUIAdmin();
   const g = el("grupo").value;
   if(g) renderGroupInfo(g);
@@ -468,7 +465,7 @@ el("btnLogout").addEventListener("click", () => {
 el("grupo").addEventListener("change", e => {
   const g = e.target.value;
   if(!g){ groupInfo.style.display="none"; groupInfo.innerHTML=""; draftChecklist={}; return; }
-  draftChecklist[g] = {};   // começa vazio – obrigatório marcar cada item
+  draftChecklist[g] = {};
   renderGroupInfo(g);
 });
 
@@ -553,7 +550,6 @@ el("btnSalvar").addEventListener("click", async () => {
   statusChecklist[grupo] = { ...snapshot };
 
   setStatusConexao("sync","Enviando...");
-
   try{
     if(editandoId){
       if(!isAdmin){
@@ -564,7 +560,7 @@ el("btnSalvar").addEventListener("click", async () => {
         nome, data, horas, grupo, atividade, checklist: snapshot
       }).eq("id", editandoId);
       if(error) throw error;
-      mostrarMsg("Lançamento atualizado com sucesso!","ok");
+      mostrarMsg("Lançamento atualizado!","ok");
       editandoId = null;
       el("btnSalvar").textContent = "💾 Salvar lançamento";
     } else {
@@ -572,12 +568,10 @@ el("btnSalvar").addEventListener("click", async () => {
         nome, data, horas, grupo, atividade, checklist: snapshot
       }]);
       if(error) throw error;
-      mostrarMsg("Lançamento salvo com sucesso!","ok");
+      mostrarMsg("Lançamento salvo!","ok");
     }
 
-    /* Atualiza o status oficial do grupo também */
     await salvarStatusGrupo(grupo);
-
     limparFormulario();
     await carregarTudo(true);
     setStatusConexao("on","Conectado (dados compartilhados)");
@@ -725,16 +719,11 @@ tabela.addEventListener("click", async e => {
   if(!item) return;
 
   if(acao === "excluir"){
-    if(!confirm(`Excluir o lançamento de ${item.nome}?`)){
-      return;
-    }
+    if(!confirm(`Excluir o lançamento de ${item.nome}?`)) return;
     setStatusConexao("sync","Excluindo...");
     const { error } = await sb.from("lancamentos").delete().eq("id", id);
     if(error){ console.error(error); mostrarMsg("Erro ao excluir.","err"); }
-    else {
-      mostrarMsg("Lançamento excluído.","info");
-      await carregarTudo(true);
-    }
+    else { mostrarMsg("Lançamento excluído.","info"); await carregarTudo(true); }
     setStatusConexao("on","Conectado (dados compartilhados)");
   } else if(acao === "editar"){
     el("nome").value = item.nome;
@@ -791,7 +780,7 @@ function renderAdminChecklistEditor(){
       renderResumo();
       render();
       await salvarStatusGrupo(pill.dataset.adminGrupo);
-      mostrarMsg("Status do checklist atualizado (nuvem).","ok");
+      mostrarMsg("Status atualizado na nuvem.","ok");
     });
   });
 }
@@ -810,14 +799,14 @@ el("btnResetChecklists").addEventListener("click", async () => {
 
 el("btnMarcarTudoConcluido").addEventListener("click", async () => {
   if(!isAdmin) return;
-  if(!confirm("Marcar TODOS os itens de TODOS os grupos como 'Concluída'?")) return;
+  if(!confirm("Marcar TODOS os itens como 'Concluída'?")) return;
   Object.keys(GRUPOS).forEach(g => {
     statusChecklist[g] = {};
     GRUPOS[g].entregaveis.forEach((_,i) => statusChecklist[g][i] = "concluida");
   });
   for(const g of Object.keys(GRUPOS)) await salvarStatusGrupo(g);
   renderAdminChecklistEditor(); renderResumo(); render();
-  mostrarMsg("Todos os checklists marcados como concluídos.","ok");
+  mostrarMsg("Tudo marcado como concluído.","ok");
 });
 
 el("btnApagarTudo").addEventListener("click", async () => {
@@ -826,10 +815,7 @@ el("btnApagarTudo").addEventListener("click", async () => {
   setStatusConexao("sync","Apagando...");
   const { error } = await sb.from("lancamentos").delete().neq("id","00000000-0000-0000-0000-000000000000");
   if(error){ console.error(error); mostrarMsg("Erro ao apagar.","err"); }
-  else {
-    mostrarMsg("Todos os lançamentos foram apagados.","info");
-    await carregarTudo(true);
-  }
+  else { mostrarMsg("Todos os lançamentos foram apagados.","info"); await carregarTudo(true); }
   setStatusConexao("on","Conectado (dados compartilhados)");
 });
 
@@ -863,7 +849,6 @@ el("btnExportar").addEventListener("click", () => {
 });
 
 el("btnImprimir").addEventListener("click", () => window.print());
-
 el("btnAtualizar").addEventListener("click", () => carregarTudo(false));
 
 /* ====== Init ====== */
@@ -871,9 +856,7 @@ el("btnAtualizar").addEventListener("click", () => carregarTudo(false));
   el("data").value = new Date().toISOString().slice(0,10);
   atualizarUIAdmin();
   await carregarTudo(false);
-  /* Sincronização automática a cada 15s */
   timerSync = setInterval(() => carregarTudo(true), INTERVALO_MS);
-  /* Atualiza ao voltar para a aba */
   document.addEventListener("visibilitychange", () => {
     if(!document.hidden) carregarTudo(true);
   });
